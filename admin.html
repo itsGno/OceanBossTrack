@@ -3,104 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOS-M DATABASE ADMIN</title>
+    <title>TOS-M DATABASE ADMIN V2.2</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
         body { font-family: 'Kanit', sans-serif; background-color: #0d1117; color: #e2e8f0; }
-        .input-box { background: #161b22; border: 1px solid #30363d; border-radius: 0.75rem; padding: 0.75rem; width: 100%; color: white; outline: none; }
+        .input-box { background: #161b22; border: 1px solid #30363d; border-radius: 0.75rem; padding: 0.75rem; width: 100%; color: white; outline: none; font-size: 0.875rem; }
         .input-box:focus { border-color: #58a6ff; }
-        .boss-item { background: #161b22; border: 1px solid #30363d; transition: 0.2s; }
-        .boss-item:hover { border-color: #238636; }
+        .boss-item { background: #161b22; border: 1px solid #30363d; }
     </style>
 </head>
 <body class="p-4 md:p-10">
-
-    <div class="max-w-5xl mx-auto">
-        <header class="mb-8 border-b border-[#30363d] pb-6">
-            <h1 class="text-3xl font-bold text-white">🗂️ Boss Database Manager</h1>
-            <p class="text-gray-500 text-xs mt-1 uppercase">แก้ไขข้อมูลบอสพื้นฐาน (ชื่อ/แมพ/เวลา)</p>
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 border-b border-[#30363d] pb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-bold text-white">🗂️ Boss Database <span class="text-blue-500 text-sm">V2.2</span></h1>
+                <p class="text-gray-500 text-xs mt-1 uppercase">จัดการข้อมูลบอส (Lv / Element / Map)</p>
+            </div>
+            <button onclick="location.href='index.html'" class="text-xs bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-700 font-bold uppercase">Back to Home</button>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1">
-                <div class="bg-[#161b22] p-6 rounded-2xl border border-[#30363d] sticky top-10">
+                <div class="bg-[#161b22] p-6 rounded-2xl border border-[#30363d] sticky top-10 shadow-2xl">
                     <h2 id="form-title" class="text-xl font-bold mb-4 text-blue-400">➕ เพิ่มบอสใหม่</h2>
-                    <input type="hidden" id="edit-id">
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">Boss ID (ภาษาอังกฤษเท่านั้น)</label>
-                            <input type="text" id="b-id" placeholder="เช่น mirtis_forest" class="input-box">
+                    <div class="space-y-3">
+                        <label class="text-[10px] text-gray-500 font-bold uppercase">Boss ID (e.g. mirtis)</label>
+                        <input type="text" id="b-id" placeholder="ID" class="input-box">
+                        <label class="text-[10px] text-gray-500 font-bold uppercase">Boss Name</label>
+                        <input type="text" id="b-name" placeholder="Name" class="input-box">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-[10px] text-gray-500 font-bold uppercase">Level</label><input type="number" id="b-lv" placeholder="100" class="input-box"></div>
+                            <div><label class="text-[10px] text-gray-500 font-bold uppercase">Element</label><input type="text" id="b-element" placeholder="Dark" class="input-box"></div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">ชื่อบอส (ภาษาไทย/Eng)</label>
-                            <input type="text" id="b-name" placeholder="ชื่อบอส..." class="input-box">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">แผนที่ (Map)</label>
-                            <input type="text" id="b-map" placeholder="Forest of Prayers..." class="input-box">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">เวลาเกิด (นาที)</label>
-                            <input type="number" id="b-respawn" placeholder="120" class="input-box">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">ลิ้งก์รูปภาพ (Image URL)</label>
-                            <input type="text" id="b-img" placeholder="https://..." class="input-box">
-                        </div>
-                        
+                        <label class="text-[10px] text-gray-500 font-bold uppercase">Respawn (Minutes)</label>
+                        <input type="number" id="b-respawn" placeholder="120" class="input-box">
+                        <label class="text-[10px] text-gray-500 font-bold uppercase">Map Name</label>
+                        <input type="text" id="b-map" placeholder="Map" class="input-box">
+                        <label class="text-[10px] text-gray-500 font-bold uppercase">Image URL</label>
+                        <input type="text" id="b-img" placeholder="https://..." class="input-box">
                         <div class="pt-4 flex gap-2">
-                            <button onclick="saveBoss()" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold transition-all uppercase">Save Data</button>
-                            <button id="cancel-btn" onclick="clearForm()" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-4 rounded-xl font-bold uppercase transition-all">Cancel</button>
+                            <button onclick="saveBoss()" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-bold transition-all uppercase text-sm">Save Data</button>
+                            <button id="cancel-btn" onclick="clearForm()" class="hidden bg-gray-700 hover:bg-gray-600 text-white px-4 rounded-xl font-bold uppercase text-sm">Cancel</button>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="lg:col-span-2">
-                <h2 class="text-xl font-bold mb-4 flex justify-between items-center">
-                    <span>รายการบอสทั้งหมด</span>
-                    <span id="boss-count" class="text-sm bg-blue-900 text-blue-300 px-3 py-1 rounded-full">0</span>
-                </h2>
-                <div id="boss-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    </div>
+                <div id="boss-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // ใช้ Config เดียวกับหน้าหลัก
         const _0x1f2a = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebaseio.com/" };
         firebase.initializeApp(_0x1f2a);
         const _db = firebase.database();
 
-        // โหลดข้อมูลบอสจาก Firebase (แทนที่ไฟล์ JSON)
         function loadBosses() {
-            _db.ref('master_bosses').on('value', (snapshot) => {
-                const data = snapshot.val() || {};
+            _db.ref('master_bosses').on('value', (s) => {
                 const list = document.getElementById('boss-list');
-                const count = document.getElementById('boss-count');
                 list.innerHTML = "";
-                
-                const entries = Object.entries(data);
-                count.innerText = entries.length;
-
-                entries.forEach(([key, boss]) => {
+                Object.entries(s.val() || {}).forEach(([key, b]) => {
                     const card = document.createElement('div');
-                    card.className = "boss-item p-4 rounded-2xl flex items-center gap-4";
+                    card.className = "boss-item p-4 rounded-2xl flex items-center gap-4 border border-gray-800";
                     card.innerHTML = `
-                        <img src="${boss.img}" class="w-16 h-16 rounded-xl object-cover bg-black">
+                        <img src="${b.img}" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700">
                         <div class="flex-1">
-                            <h4 class="font-bold text-white">${boss.name}</h4>
-                            <p class="text-[10px] text-red-400 font-bold uppercase">📍 ${boss.map}</p>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase">⏱️ ${boss.respawn} MINS</p>
+                            <h4 class="font-bold text-white text-sm">${b.name} <span class="text-blue-400 text-[10px]">Lv.${b.lv}</span></h4>
+                            <p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">${b.element || 'None'}</p>
+                            <p class="text-[9px] text-red-500 font-bold uppercase mt-1">📍 ${b.map}</p>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <button onclick="editBoss('${key}')" class="text-blue-400 hover:text-white p-1 transition-all"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                            <button onclick="deleteBoss('${key}')" class="text-gray-600 hover:text-red-500 p-1 transition-all"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            <button onclick="editBoss('${key}')" class="text-blue-400 hover:text-white"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                            <button onclick="deleteBoss('${key}')" class="text-gray-600 hover:text-red-500"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                         </div>
                     `;
                     list.appendChild(card);
@@ -110,58 +88,36 @@
 
         function saveBoss() {
             const id = document.getElementById('b-id').value.trim();
-            const name = document.getElementById('b-name').value.trim();
-            const map = document.getElementById('b-map').value.trim();
-            const respawn = document.getElementById('b-respawn').value.trim();
-            const img = document.getElementById('b-img').value.trim();
-
-            if (!id || !name) return alert("กรุณาใส่ ID และ ชื่อบอส!");
-
-            const bossData = {
+            const data = {
                 id: id,
-                name: name,
-                map: map,
-                respawn: parseInt(respawn),
-                img: img || "https://placehold.co/200x200?text=No+Image"
+                name: document.getElementById('b-name').value.trim(),
+                lv: parseInt(document.getElementById('b-lv').value),
+                element: document.getElementById('b-element').value.trim(),
+                respawn: parseInt(document.getElementById('b-respawn').value),
+                map: document.getElementById('b-map').value.trim(),
+                img: document.getElementById('b-img').value.trim()
             };
-
-            _db.ref('master_bosses/' + id).set(bossData).then(() => {
-                clearForm();
-            });
+            if (!id || !data.name) return alert("Fill all fields!");
+            _db.ref('master_bosses/' + id).set(data).then(() => clearForm());
         }
 
         function editBoss(id) {
             _db.ref('master_bosses/' + id).once('value', (s) => {
                 const b = s.val();
-                document.getElementById('b-id').value = b.id;
-                document.getElementById('b-id').disabled = true; // ห้ามแก้ ID
+                document.getElementById('b-id').value = b.id; document.getElementById('b-id').disabled = true;
                 document.getElementById('b-name').value = b.name;
-                document.getElementById('b-map').value = b.map;
+                document.getElementById('b-lv').value = b.lv;
+                document.getElementById('b-element').value = b.element;
                 document.getElementById('b-respawn').value = b.respawn;
+                document.getElementById('b-map').value = b.map;
                 document.getElementById('b-img').value = b.img;
-                
-                document.getElementById('form-title').innerText = "📝 แก้ไขข้อมูลบอส";
+                document.getElementById('form-title').innerText = "📝 Edit Boss Data";
                 document.getElementById('cancel-btn').classList.remove('hidden');
             });
         }
 
-        function deleteBoss(id) {
-            if (confirm(`ยืนยันการลบบอส ID: ${id} ออกจากระบบถาวร?`)) {
-                _db.ref('master_bosses/' + id).remove();
-            }
-        }
-
-        function clearForm() {
-            document.getElementById('b-id').value = "";
-            document.getElementById('b-id').disabled = false;
-            document.getElementById('b-name').value = "";
-            document.getElementById('b-map').value = "";
-            document.getElementById('b-respawn').value = "";
-            document.getElementById('b-img').value = "";
-            document.getElementById('form-title').innerText = "➕ เพิ่มบอสใหม่";
-            document.getElementById('cancel-btn').classList.add('hidden');
-        }
-
+        function deleteBoss(id) { if (confirm(`Delete ${id}?`)) _db.ref('master_bosses/' + id).remove(); }
+        function clearForm() { document.querySelectorAll('.input-box').forEach(i => i.value = ""); document.getElementById('b-id').disabled = false; document.getElementById('form-title').innerText = "➕ Add New Boss"; document.getElementById('cancel-btn').classList.add('hidden'); }
         loadBosses();
     </script>
 </body>

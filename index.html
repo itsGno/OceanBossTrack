@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS-M Tracker V1.1.6</title>
+    <title>TOS-M Tracker V2.2.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -17,41 +17,50 @@
         .btn-locked { opacity: 0.15; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
         .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
         .text-event-orange { color: #f97316 !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
+        /* Element Colors */
+        .ele-dark { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4); }
+        .ele-fire { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .ele-ice { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .ele-earth { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .ele-holy { background: rgba(253, 224, 71, 0.2); color: #fde047; border: 1px solid rgba(253, 224, 71, 0.4); }
+        .ele-none { background: rgba(156, 163, 175, 0.2); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.4); }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <header class="max-w-2xl mx-auto text-center mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.1.6</h1>
-        <div id="c-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Disconnected</div>
+        <h1 onclick="_admTrig()" class="text-3xl font-bold text-white mb-2 cursor-default select-none">
+            🌳 TOS-M Tracker <span class="text-blue-500">V2.2.0</span>
+        </h1>
+        <div id="c-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Connecting...</div>
     </header>
 
     <div class="max-w-2xl mx-auto mb-6">
         <div id="auth-card" class="bg-gray-800 p-4 rounded-3xl border border-gray-700 shadow-xl">
             <div id="input-fields">
                 <div class="mb-3">
-                    <label class="block text-xs text-yellow-500 font-bold mb-1 uppercase">Group ID</label>
-                    <input type="text" id="_grp" oninput="_vld()" placeholder="Guild Name" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-yellow-500">
+                    <label class="block text-[10px] text-yellow-500 font-bold mb-1 uppercase">Group ID (กิลด์)</label>
+                    <input type="text" id="_grp" oninput="_vld()" placeholder="ใส่ชื่อกิลด์ของคุณ..." class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-yellow-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">Name</label>
-                        <input type="text" id="_usr" oninput="_vld()" placeholder="Nickname" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
+                        <label class="block text-[10px] text-gray-400 font-bold mb-1 uppercase">Nickname</label>
+                        <input type="text" id="_usr" oninput="_vld()" placeholder="ชื่อในเกม" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">Webhook</label>
+                        <label class="block text-[10px] text-gray-400 font-bold mb-1 uppercase">Discord Webhook</label>
                         <input type="password" id="_whk" oninput="_vld()" placeholder="https://..." class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                     </div>
                 </div>
-                <button id="_svB" onclick="_save()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-xs py-3 rounded-xl font-bold btn-locked uppercase">Save & Connect Profile</button>
+                <button id="_svB" onclick="_save()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-xs py-3 rounded-xl font-bold btn-locked uppercase">Save & Lock Profile</button>
             </div>
 
             <div id="locked-fields" class="hidden flex justify-between items-center py-1">
                 <div>
-                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Status: Connected</div>
+                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Status: Protected</div>
                     <div class="text-sm font-bold text-white"><span id="display-usr"></span> @ <span id="display-grp" class="text-yellow-500"></span></div>
                 </div>
-                <button onclick="_logout()" class="text-[10px] bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all uppercase">Logout</button>
+                <button onclick="_logout()" class="text-[10px] bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest">Logout</button>
             </div>
             <p id="_warn" class="text-[10px] text-center mt-2 font-bold uppercase"></p>
         </div>
@@ -60,26 +69,50 @@
     <div id="b-cont" class="max-w-2xl mx-auto flex flex-col gap-6"></div>
 
     <script>
-        // Firebase Config (Obfuscated)
-        const _0x1f2a = { databaseURL: "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x74\x6f\x73\x2d\x62\x6f\x73\x73\x2d\x74\x72\x61\x63\x6b\x65\x72\x2d\x64\x65\x66\x61\x75\x6c\x74\x2d\x72\x74\x64\x62\x2e\x61\x73\x69\x61\x2d\x73\x6f\x75\x74\x68\x65\x61\x73\x74\x31\x2e\x66\x69\x72\x65\x62\x61\x73\x65\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x61\x70\x70\x2f" };
+        // Database Configuration
+        const _0x1f2a = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebaseio.com/" };
         firebase.initializeApp(_0x1f2a);
         const _db = firebase.database();
         
-        let _bsData = [], _pnBs = JSON.parse(localStorage.getItem('\x74\x6f\x73\x5f\x70\x69\x6e\x6e\x65\x64\x5f\x62\x6f\x73\x73\x65\x73') || '[]');
-        let _fbD = {}, _isE = false, _currG = "";
+        let _bsData = [], 
+            _pnBs = JSON.parse(localStorage.getItem('tos_pinned_bosses') || '[]'),
+            _fbD = {}, 
+            _isE = false, 
+            _currG = "", 
+            _aClk = 0, 
+            _aTme;
 
+        // Validation Logic
         function _vld() {
-            const g = document.getElementById('_grp').value.trim(), n = document.getElementById('_usr').value.trim(), w = document.getElementById('_whk').value.trim();
+            const g = document.getElementById('_grp').value.trim(),
+                  n = document.getElementById('_usr').value.trim(),
+                  w = document.getElementById('_whk').value.trim();
             if (localStorage.getItem('tos_locked') === 'true') return;
+            
             const canS = g.length >= 2;
             document.getElementById('_svB').classList.toggle('btn-locked', !canS);
+            
+            const wrn = document.getElementById('_warn');
+            if (!canS) { wrn.innerText = "⚠️ Enter Group ID"; wrn.className = "text-[10px] text-red-500 text-center mt-2 font-bold uppercase"; }
+            else if (n.length < 2 || !w.startsWith('https://')) { wrn.innerText = "ℹ️ View Only Mode"; wrn.className = "text-[10px] text-blue-400 text-center mt-2 font-bold uppercase"; }
+            else { wrn.innerText = "✅ Full Access Ready"; wrn.className = "text-[10px] text-green-500 text-center mt-2 font-bold uppercase"; }
         }
 
+        // Initialize App
         async function _init() {
             try {
-                const r = await fetch('bosses.json?v=' + Date.now());
-                _bsData = await r.json();
-                const sG = localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65') || '', sN = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65') || '', sW = localStorage.getItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b') || '', isL = localStorage.getItem('tos_locked') === 'true';
+                // 1. Load Master Bosses from Firebase
+                _db.ref('master_bosses').on('value', (snapshot) => {
+                    _bsData = Object.values(snapshot.val() || {});
+                    _rend();
+                });
+
+                // 2. Load Profile from LocalStorage
+                const sG = localStorage.getItem('tos_group_name') || '', 
+                      sN = localStorage.getItem('tos_uret_name') || '', 
+                      sW = localStorage.getItem('tos_discord_webhook') || '', 
+                      isL = localStorage.getItem('tos_locked') === 'true';
+
                 if (isL && sG) {
                     _currG = sG;
                     document.getElementById('input-fields').classList.add('hidden');
@@ -89,16 +122,26 @@
                     _isE = (sN && sW.startsWith('https://'));
                     _sync(sG);
                 } else {
-                    document.getElementById('_grp').value = sG; document.getElementById('_usr').value = sN; document.getElementById('_whk').value = sW;
+                    document.getElementById('_grp').value = sG; 
+                    document.getElementById('_usr').value = sN; 
+                    document.getElementById('_whk').value = sW;
                 }
-                _rend(); _vld(); _loop();
-            } catch (e) { console.warn("Init Err"); }
+                _vld(); _loop();
+            } catch (e) { console.warn("Init Error", e); }
         }
 
+        // Render Boss Cards
         function _rend() {
             const c = document.getElementById('b-cont');
+            if (_bsData.length === 0) {
+                c.innerHTML = `<div class="text-center py-20 text-gray-600 uppercase font-bold tracking-widest">No Boss Data. Add in Admin Panel.</div>`;
+                return;
+            }
             c.innerHTML = _bsData.map(b => {
-                const p = _pnBs.includes(`card-${b.id}`), l = _isE ? "" : "btn-locked";
+                const p = _pnBs.includes(`card-${b.id}`), 
+                      l = _isE ? "" : "btn-locked",
+                      eleClass = `ele-${(b.element || 'none').toLowerCase()}`;
+                
                 return `<div class="boss-card bg-gray-900 p-6 flex flex-col md:flex-row gap-6 ${p?'pinned':''}" id="card-${b.id}">
                     <div class="relative w-full md:w-36 h-36 flex-shrink-0 mx-auto">
                         <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800"><img src="${b.img}" class="w-full h-full object-cover"></div>
@@ -108,18 +151,23 @@
                     </div>
                     <div class="flex-1">
                         <div class="flex justify-between items-start">
-                            <div><h3 class="text-2xl font-bold text-white">${b.name}</h3><div class="text-red-500 text-xs font-bold mt-1 uppercase">📍 ${b.map}</div><div id="log-${b.id}" class="text-xs text-gray-500 mt-1 italic">No Data</div></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white leading-tight">${b.name} <span class="text-blue-500 text-sm ml-1 font-mono">Lv.${b.lv}</span></h3>
+                                <div class="mt-1"><span class="text-[9px] ${eleClass} px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">${b.element || 'None'}</span></div>
+                                <div class="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">📍 ${b.map}</div>
+                                <div id="log-${b.id}" class="text-[10px] text-gray-500 mt-1 italic tracking-tight italic">No Data</div>
+                            </div>
                             <button onclick="_rst('${b.id}')" class="text-gray-600 hover:text-red-500 p-2 ${l}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
                         <div class="mt-4 bg-black rounded-2xl py-3 px-2 text-center border border-gray-800">
                             <div id="tmr-${b.id}" class="text-4xl text-yellow-400 font-mono uppercase">READY</div>
-                            <div id="st-${b.id}" class="text-xs text-green-500 font-bold mt-1 uppercase">Ready to Hunt</div>
+                            <div id="st-${b.id}" class="text-[10px] text-green-500 font-bold mt-1 uppercase tracking-widest">Ready to Hunt</div>
                         </div>
                         <div class="mt-5 grid grid-cols-1 gap-2">
-                            <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl ${l}">เพิ่งตาย (${b.respawn} นาที)</button>
+                            <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 hover:bg-blue-600 text-white text-[10px] font-bold py-3 rounded-2xl ${l} uppercase tracking-tighter">เพิ่งตาย (${b.respawn} นาที)</button>
                             <div class="flex gap-2">
-                                <input type="number" id="in-${b.id}" placeholder="นาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none ${l}">
-                                <button onclick="_mchk('${b.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-4 rounded-xl font-bold ${l}">เริ่มนับ</button>
+                                <input type="number" id="in-${b.id}" placeholder="ระบุนาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none ${l}">
+                                <button onclick="_mchk('${b.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-4 rounded-xl font-bold ${l} uppercase">เริ่มนับ</button>
                             </div>
                         </div>
                     </div>
@@ -127,6 +175,7 @@
             }).join('');
         }
 
+        // Real-time Sync with Group
         function _sync(g) {
             _db.ref(`groups/${g}/timers`).on('value', (s) => {
                 _fbD = s.val() || {};
@@ -135,115 +184,139 @@
             });
         }
 
+        // Timer Loop
         function _loop() {
             setInterval(() => {
-                const n = Date.now();
+                const now = Date.now();
                 _bsData.forEach(b => {
-                    const t = _fbD[b.id], tmE = document.getElementById(`tmr-${b.id}`), stE = document.getElementById(`st-${b.id}`), cdE = document.getElementById(`card-${b.id}`), lgE = document.getElementById(`log-${b.id}`);
+                    const t = _fbD[b.id], 
+                          tmE = document.getElementById(`tmr-${b.id}`), 
+                          stE = document.getElementById(`st-${b.id}`), 
+                          cdE = document.getElementById(`card-${b.id}`), 
+                          lgE = document.getElementById(`log-${b.id}`);
+                    
                     if (t && tmE) {
-                        lgE.innerText = `By: ${t.user} (${t.time})`;
-                        const r = Math.floor((t.expireTime - n) / 1000);
-                        if (r > 0) {
-                            let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
-                            tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                        lgE.innerText = `Checked by: ${t.user} at ${t.time}`;
+                        const remain = Math.floor((t.expireTime - now) / 1000);
+                        
+                        if (remain > 0) {
+                            let h = Math.floor(remain / 3600),
+                                m = Math.floor((remain % 3600) / 60),
+                                s = remain % 60;
+                            tmE.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                             tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
-                            stE.innerText = "COUNTING DOWN..."; stE.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
+                            stE.innerText = "COUNTING DOWN...";
+                            stE.className = "text-[10px] text-gray-500 font-bold mt-1 uppercase";
                             cdE.classList.remove('alive-glow');
                         } else {
-                            // BOSS ALIVE!
-                            tmE.innerText = "EVENT START! ⚔️"; tmE.className = "text-3xl text-event-orange font-bold";
-                            stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-xs text-event-orange font-bold mt-1 uppercase";
+                            tmE.innerText = "EVENT START! ⚔️";
+                            tmE.className = "text-3xl text-event-orange font-bold";
+                            stE.innerText = "ตีมอนปลุกบอส!";
+                            stE.className = "text-[10px] text-event-orange font-bold mt-1 uppercase";
                             cdE.classList.add('alive-glow');
                             
-                            // 🔥 ปรับแก้เงื่อนไขแจ้งเตือน: เช็คจาก Firebase โดยตรง
+                            // Webhook Notification
                             if (t.notified === false && _isE) {
-                                // ป้องกันการส่งซ้ำด้วยการอัปเดตทันที
                                 _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
-                                
-                                const evT = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                _post(b.id, "\x41\x4c\x49\x56\x45", evT);
+                                _post(b.id, "ALIVE", new Date().toLocaleTimeString('th-TH'));
                             }
                         }
                     } else if (tmE) {
-                        tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
-                        stE.innerText = "Ready to Hunt"; stE.className = "text-xs text-green-500 font-bold mt-1 uppercase";
-                        cdE.classList.remove('alive-glow'); lgE.innerText = "No Data";
+                        tmE.innerText = "READY";
+                        tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
+                        stE.innerText = "Ready to Hunt";
+                        stE.className = "text-[10px] text-green-500 font-bold mt-1 uppercase";
+                        cdE.classList.remove('alive-glow');
+                        lgE.innerText = "No Data";
                     }
                 });
             }, 1000);
         }
 
+        // Control Actions
         function _chk(id, m) {
             if (!_isE) return;
-            const t = _fbD[id]; if (t && t.expireTime > Date.now()) { if (!confirm(`⚠️ นับใหม่ทับข้อมูลเดิม?`)) return; }
-            const n = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65');
+            const user = localStorage.getItem('tos_uret_name');
             _db.ref(`groups/${_currG}/timers/${id}`).set({ 
                 expireTime: Date.now() + (m * 60 * 1000), 
-                user: n, 
+                user: user, 
                 time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }), 
                 notified: false 
             });
         }
 
         function _mchk(id) {
-            const v = document.getElementById(`in-${id}`).value; if (!v) return;
-            _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value = '';
+            const val = document.getElementById(`in-${id}`).value;
+            if (val) { _chk(id, parseFloat(val)); document.getElementById(`in-${id}`).value = ''; }
         }
 
         function _rst(id) {
-            if (_isE && confirm("Reset บอสตัวนี้?")) { 
-                _post(id, "\x44\x45\x4c\x45\x54\x45"); 
-                _db.ref(`groups/${_currG}/timers/${id}`).remove(); 
+            if (_isE && confirm("Reset บอสตัวนี้?")) {
+                _post(id, "DELETE");
+                _db.ref(`groups/${_currG}/timers/${id}`).remove();
             }
         }
 
         function _pin(id) {
-            const i = _pnBs.indexOf(id); if (i > -1) _pnBs.splice(i, 1); else _pnBs.push(id);
-            localStorage.setItem('\x74\x6f\x73\x5f\x70\x69\x6e\x6e\x65\x64\x5f\x62\x6f\x73\x73\x65\x73', JSON.stringify(_pnBs)); _rend();
+            const idx = _pnBs.indexOf(id);
+            if (idx > -1) _pnBs.splice(idx, 1); else _pnBs.push(id);
+            localStorage.setItem('tos_pinned_bosses', JSON.stringify(_pnBs));
+            _rend();
         }
 
         function _save() {
-            const g = document.getElementById('_grp').value.trim(), n = document.getElementById('_usr').value.trim(), w = document.getElementById('_whk').value.trim();
+            const g = document.getElementById('_grp').value.trim(),
+                  n = document.getElementById('_usr').value.trim(),
+                  w = document.getElementById('_whk').value.trim();
             if (g.length >= 2) {
-                localStorage.setItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65', g);
-                localStorage.setItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65', n);
-                localStorage.setItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b', w);
+                localStorage.setItem('tos_group_name', g);
+                localStorage.setItem('tos_uret_name', n);
+                localStorage.setItem('tos_discord_webhook', w);
                 localStorage.setItem('tos_locked', 'true');
                 location.reload();
             }
         }
 
         function _logout() {
-            if(confirm("ยกเลิกการล็อค Profile เพื่อแก้ไขข้อมูล?")) {
+            if(confirm("Logout เพื่อแก้ไขโปรไฟล์?")) {
                 localStorage.setItem('tos_locked', 'false');
                 location.reload();
             }
         }
 
-        async function _post(id, ty, evT = "") {
-            const w = localStorage.getItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b');
-            if (!w || !w.startsWith('https://')) return;
-            const b = _bsData.find(x => x.id === id), u = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65');
-            
-            let c = "";
-            if (ty === "\x41\x4c\x49\x56\x45") {
-                // แจ้งเตือน 4 บรรทัดตามบอสสั่ง
-                c = `EVENT START! บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n` +
-                    `สถานที่: **${b.map}**\n` +
-                    `เวลาปัจจุบัน: **${evT}**\n` +
-                    `รีบไปตีมอนเปิดสเตจด่วน! @everyone`;
-            } else {
-                c = `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]**`;
+        function _admTrig() {
+            _aClk++;
+            clearTimeout(_aTme);
+            if (_aClk >= 5) {
+                _aClk = 0;
+                const pw = prompt("กรุณาระบุรหัสผ่าน Admin:");
+                if (pw === "CHAKK") { window.location.href = 'admin.html'; }
             }
-                
-            try { 
-                await fetch(w, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ content: c }) 
-                }); 
-            } catch (e) { console.error("Webhook Error"); }
+            _aTme = setTimeout(() => { _aClk = 0; }, 2000);
         }
+
+        async function _post(id, type, evT = "") {
+            const webhook = localStorage.getItem('tos_discord_webhook');
+            if (!webhook) return;
+            const b = _bsData.find(x => x.id === id),
+                  u = localStorage.getItem('tos_uret_name');
+            
+            let content = "";
+            if (type === "ALIVE") {
+                content = `⚔️ **EVENT START!**\nบอส: **[${b.name}] (Lv.${b.lv})**\nธาตุ: **${b.element}** | แมพ: **${b.map}**\nเวลา: **${evT}**\n@everyone รีบไปตีมอนเปิดสเตจด่วน!`;
+            } else {
+                content = `🗑️ **[${u}]** ได้ทำการ Reset เวลาของบอส: **${b.name}**`;
+            }
+
+            try {
+                await fetch(webhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+            } catch (e) { console.error("Webhook Error", e); }
+        }
+
         _init();
     </script>
 </body>
