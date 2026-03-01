@@ -4,108 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tree of Savior M Boss Tracker</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
-        body { font-family: 'Kanit', sans-serif; background-color: #0b101a; color: #e2e8f0; }
         
-        #bossContainer { display: flex; flex-direction: column; gap: 1.5rem; }
-        /* ใช้ Order เพื่อให้การปักหมุดแสดงผลทันที */
-        .boss-card { border: 1px solid #1e293b; transition: all 0.3s ease; position: relative; order: 2; }
+        /* สไตล์หลัก */
+        body { font-family: 'Kanit', sans-serif; background-color: #0b101a; color: #e2e8f0; -webkit-tap-highlight-color: transparent; }
+        
+        /* ปรับแต่งปุ่มและ Card */
+        .boss-card { border: 1px solid #1e293b; transition: all 0.3s ease; position: relative; order: 2; border-radius: 1.5rem; }
         .boss-card.pinned { border-color: #fbbf24; background-color: #1e1b11; order: 1; }
         
+        /* เอฟเฟกต์เรืองแสงสีส้ม */
         .alive-glow { animation: shadow-pulse 1.5s infinite; border-color: #f97316 !important; }
         @keyframes shadow-pulse {
             0% { box-shadow: 0 0 0 0px rgba(249, 115, 22, 0.4); }
             100% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
         }
-        .btn-locked { opacity: 0.2; cursor: not-allowed !important; filter: grayscale(1); }
-        .input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 1px #ef4444; }
+        
+        .btn-locked { opacity: 0.3; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
+        
+        /* Custom Utilities */
+        .rounded-3xl { border-radius: 1.5rem; }
+        .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
+        
+        /* 🔥 Custom Class สำหรับสีข้อความ EVENT START! (ส้มดุดัน) */
+        .text-event-start { color: #f97316; } /* สีส้ม Orange-500 */
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <header class="max-w-2xl mx-auto text-center mb-6">
         <h1 class="text-3xl font-bold text-white mb-2">🌳 Tree of Savior M Boss Tracker</h1>
-        <div id="connection-status" class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">กรุณาตั้งค่ากลุ่มเพื่อเริ่มใช้งาน</div>
+        <div id="connection-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Connect to a group to start</div>
     </header>
 
-    <div class="max-w-2xl mx-auto mb-6 space-y-3">
-        <div class="bg-[#1e293b] p-4 rounded-3xl border border-gray-700 shadow-xl">
-            <div class="grid grid-cols-1 gap-3 mb-3">
-                <div class="flex flex-col">
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-[10px] text-yellow-500 font-bold uppercase">Group ID (A-Z, 0-9)</label>
-                        <span id="group-hint" class="text-[9px] text-gray-500 italic">Example: Guild_One</span>
-                    </div>
-                    <input type="text" id="groupName" oninput="handleGroupInput(this)" placeholder="ชื่อกลุ่ม (ห้ามเว้นวรรค/ไทย)" 
-                           class="bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-all">
-                </div>
+    <div class="max-w-2xl mx-auto mb-6">
+        <div class="bg-gray-800 p-4 rounded-3xl border border-gray-700 shadow-xl">
+            <div class="mb-3">
+                <label class="block text-xs text-yellow-500 font-bold mb-1 uppercase">Group ID (A-Z, 0-9)</label>
+                <input type="text" id="groupName" oninput="validateUser()" placeholder="เช่น Guild_Name" 
+                       class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-yellow-500">
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col">
-                    <label class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Your Name</label>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">Your Name</label>
                     <input type="text" id="userName" oninput="validateUser()" placeholder="ชื่อเล่น..." 
-                           class="bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-blue-500 transition-all">
+                           class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                 </div>
-                <div class="flex flex-col">
-                    <label class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Discord Webhook</label>
+                <div>
+                    <label class="block text-xs text-gray-400 font-bold mb-1 uppercase">Discord Webhook</label>
                     <input type="password" id="webhookUrl" placeholder="Webhook URL..." 
-                           class="bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white outline-none">
+                           class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                 </div>
             </div>
-            <button id="saveBtn" onclick="saveProfile()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] py-2 rounded-xl font-bold transition-all shadow-lg active:scale-95 btn-locked">บันทึกและเชื่อมต่อ</button>
+            <button id="saveBtn" onclick="saveProfile()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-xs py-2 rounded-xl font-bold transition-all btn-locked">SAVE & CONNECT</button>
         </div>
     </div>
 
-    <div id="bossContainer" class="max-w-2xl mx-auto space-y-6"></div>
+    <div id="bossContainer" class="max-w-2xl mx-auto flex flex-col gap-6"></div>
 
     <script>
-        // --- CONFIG ---
         const firebaseConfig = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        let timers = {};
         let currentBosses = [];
         let pinnedBosses = JSON.parse(localStorage.getItem('tos_pinned_bosses') || '[]');
-
-        function handleGroupInput(input) {
-            input.value = input.value.replace(/\s+/g, '_');
-            const regex = /^[A-Za-z0-9_]*$/;
-            const hint = document.getElementById('group-hint');
-            if (!regex.test(input.value)) {
-                input.classList.add('input-error');
-                hint.innerText = "❌ ห้ามใช้ภาษาไทย หรืออักขระพิเศษ";
-                hint.className = "text-[9px] text-red-500 italic";
-            } else {
-                input.classList.remove('input-error');
-                hint.innerText = "✅ รูปแบบถูกต้อง";
-                hint.className = "text-[9px] text-green-500 italic";
-            }
-            validateUser();
-        }
+        let fbData = {};
 
         function validateUser() {
-            const group = document.getElementById('groupName').value.trim();
-            const name = document.getElementById('userName').value.trim();
-            const regex = /^[A-Za-z0-9_]+$/;
-            const isValid = regex.test(group) && group.length >= 2 && name.length >= 2;
-            const saveBtn = document.getElementById('saveBtn');
-            if (isValid) {
-                saveBtn.classList.remove('btn-locked');
-                return true;
-            } else {
-                saveBtn.classList.add('btn-locked');
-                return false;
-            }
-        }
-
-        function getGroupPath() {
-            const group = document.getElementById('groupName').value.trim();
-            return group ? `groups/${group}/` : null;
+            const g = document.getElementById('groupName').value.trim();
+            const n = document.getElementById('userName').value.trim();
+            const isValid = g.length >= 2 && n.length >= 2;
+            document.getElementById('saveBtn').classList.toggle('btn-locked', !isValid);
+            return isValid;
         }
 
         async function init() {
@@ -113,59 +91,142 @@
                 const response = await fetch('bosses.json?v=' + Date.now());
                 currentBosses = await response.json();
                 
-                if(localStorage.getItem('tos_group_name')) document.getElementById('groupName').value = localStorage.getItem('tos_group_name');
-                if(localStorage.getItem('tos_user_name')) document.getElementById('userName').value = localStorage.getItem('tos_user_name');
-                if(localStorage.getItem('tos_discord_webhook')) document.getElementById('webhookUrl').value = localStorage.getItem('tos_discord_webhook');
+                document.getElementById('groupName').value = localStorage.getItem('tos_group_name') || '';
+                document.getElementById('userName').value = localStorage.getItem('tos_user_name') || '';
+                document.getElementById('webhookUrl').value = localStorage.getItem('tos_discord_webhook') || '';
                 
-                handleGroupInput(document.getElementById('groupName'));
-                renderBosses(currentBosses);
-                if (validateUser()) syncFirebase(currentBosses);
-            } catch (e) { console.error(e); }
+                renderBosses();
+                if (validateUser()) {
+                    startFirebaseSync();
+                    startUIUpdateLoop();
+                }
+            } catch (e) { console.error("Init Error:", e); }
         }
 
-        function renderBosses(bosses) {
+        function renderBosses() {
             const container = document.getElementById('bossContainer');
-            container.innerHTML = bosses.map(boss => {
+            container.innerHTML = currentBosses.map(boss => {
                 const isPinned = pinnedBosses.includes(`card-${boss.id}`);
                 return `
-                <div class="boss-card bg-[#161b26] rounded-3xl p-6 flex flex-col sm:flex-row gap-6 ${isPinned ? 'pinned' : ''}" id="card-${boss.id}">
-                    <div class="relative w-full sm:w-36 h-36 flex-shrink-0">
-                        <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800 shadow-md">
+                <div class="boss-card bg-gray-900 p-6 flex flex-col md:flex-row gap-6 ${isPinned ? 'pinned' : ''}" id="card-${boss.id}">
+                    <div class="relative w-full md:w-36 h-36 flex-shrink-0 mx-auto">
+                        <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800">
                             <img src="${boss.img}" class="w-full h-full object-cover">
                         </div>
-                        <button onclick="togglePin('card-${boss.id}')" class="absolute -top-2 -left-2 bg-[#1e293b] rounded-full p-1.5 shadow-lg border border-gray-700 transition-all active:scale-125 z-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${isPinned ? 'text-yellow-400 fill-current' : 'text-gray-500'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
+                        <button onclick="togglePin('card-${boss.id}')" class="absolute -top-2 -left-2 bg-gray-800 rounded-full p-1 shadow-lg border border-gray-700 z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${isPinned ? 'text-yellow-400 fill-current' : 'text-gray-500'}" viewBox="0 0 24 24" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         </button>
                     </div>
                     <div class="flex-1">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-2xl font-bold text-white">${boss.name}</h3>
-                                <div class="text-red-500 text-[11px] font-bold mt-1 uppercase">📍 <span>${boss.map}</span></div>
-                                <div id="log-${boss.id}" class="text-[9px] text-gray-500 mt-1 italic leading-tight">ยังไม่มีข้อมูล</div>
+                                <div class="text-red-500 text-xs font-bold mt-1 uppercase">📍 <span>${boss.map}</span></div>
+                                <div id="log-${boss.id}" class="text-xs text-gray-500 mt-1 italic">No Data</div>
                             </div>
-                            <button onclick="resetFirebase('${boss.id}')" class="action-btn text-gray-800 hover:text-red-500 p-2 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <button onclick="resetFirebase('${boss.id}')" class="text-gray-600 hover:text-red-500 p-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
-                        <div class="mt-4 bg-black/60 rounded-2xl py-3 px-2 text-center border border-gray-800">
-                            <div id="timer-${boss.id}" class="timer-text text-4xl text-yellow-400 font-mono">READY</div>
-                            <div id="status-${boss.id}" class="text-[10px] text-green-500 font-bold mt-1 uppercase">Ready to Hunt</div>
+                        <div class="mt-4 bg-black rounded-2xl py-3 px-2 text-center border border-gray-800">
+                            <div id="timer-${boss.id}" class="text-4xl text-yellow-400 font-mono">READY</div>
+                            <div id="status-${boss.id}" class="text-xs text-green-500 font-bold mt-1 uppercase">Ready to Hunt</div>
                         </div>
                         <div class="mt-5 grid grid-cols-1 gap-2">
-                            <button onclick="updateFirebase('${boss.id}', ${boss.respawn})" class="action-btn w-full bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl shadow-lg active:scale-95">เพิ่งตาย (${boss.respawn} นาที)</button>
+                            <button onclick="sendToFirebase('${boss.id}', ${boss.respawn})" class="bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all">เพิ่งตาย (${boss.respawn} นาที)</button>
                             <div class="flex gap-2">
-                                <input type="text" id="input-${boss.id}" placeholder="เช่น 10 หรือ 1.30" class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white text-center outline-none">
-                                <button onclick="manualSync('${boss.id}')" class="action-btn bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-4 rounded-xl font-bold active:scale-95">เริ่มนับ</button>
+                                <input type="text" id="input-${boss.id}" placeholder="นาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none">
+                                <button onclick="manualSend('${boss.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-4 rounded-xl font-bold active:scale-95">เริ่มนับ</button>
                             </div>
                         </div>
                     </div>
-                </div>
-                `; }).join('');
+                </div>`;
+            }).join('');
+        }
+
+        function startFirebaseSync() {
+            const group = document.getElementById('groupName').value.trim();
+            db.ref(`groups/${group}/timers`).on('value', (snapshot) => {
+                fbData = snapshot.val() || {};
+                document.getElementById('connection-status').innerText = `● Connected: ${group}`;
+                document.getElementById('connection-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
+            });
+        }
+
+        function startUIUpdateLoop() {
+            setInterval(() => {
+                const now = Date.now();
+                currentBosses.forEach(boss => {
+                    const t = fbData[boss.id];
+                    const timerEl = document.getElementById(`timer-${boss.id}`);
+                    const statusEl = document.getElementById(`status-${boss.id}`);
+                    const cardEl = document.getElementById(`card-${boss.id}`);
+                    const logEl = document.getElementById(`log-${boss.id}`);
+
+                    if (t && timerEl) {
+                        logEl.innerText = `By: ${t.user || 'Unknown'} (${t.time})`;
+                        const remain = Math.floor((t.expireTime - now) / 1000);
+
+                        if (remain > 0) {
+                            let h=Math.floor(remain/3600), m=Math.floor((remain%3600)/60), s=remain%60;
+                            timerEl.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                            timerEl.className = "text-4xl text-yellow-400 font-mono";
+                            statusEl.innerText = "COUNTING DOWN...";
+                            statusEl.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
+                            cardEl.classList.remove('alive-glow');
+                        } else {
+                            // --- 🔥 จุดที่แก้ไข: เปลี่ยนสีข้อความเป็นสีส้มตามสั่งบอส ---
+                            timerEl.innerText = "EVENT START! ⚔️";
+                            timerEl.className = "text-3xl text-event-start font-bold"; // ใช้ custom class 'text-event-start'
+                            
+                            statusEl.innerText = "ตีมอนปลุกบอส!";
+                            statusEl.className = "text-xs text-event-start font-bold mt-1 uppercase"; // ใช้สีส้มเหมือนกัน
+                            cardEl.classList.add('alive-glow');
+                            if (!t.notified) {
+                                postToDiscord(boss.id, "ALIVE");
+                                const group = document.getElementById('groupName').value.trim();
+                                db.ref(`groups/${group}/timers/${boss.id}`).update({ notified: true });
+                            }
+                        }
+                    } else if (timerEl) {
+                        timerEl.innerText = "READY";
+                        timerEl.className = "text-4xl text-yellow-400 font-mono";
+                        statusEl.innerText = "Ready to Hunt";
+                        statusEl.className = "text-xs text-green-500 font-bold mt-1 uppercase";
+                        cardEl.classList.remove('alive-glow');
+                        logEl.innerText = "No Data";
+                    }
+                });
+            }, 1000);
+        }
+
+        function sendToFirebase(bossId, mins) {
+            const group = document.getElementById('groupName').value.trim();
+            const name = document.getElementById('userName').value.trim();
+            const numMins = parseFloat(mins);
+            if (isNaN(numMins) || !group || !name) return;
+            db.ref(`groups/${group}/timers/${bossId}`).set({
+                expireTime: Date.now() + (numMins * 60 * 1000),
+                user: name,
+                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                notified: false
+            });
+        }
+
+        function manualSend(bossId) {
+            const val = document.getElementById(`input-${bossId}`).value;
+            if (!val || val.trim() === "") return;
+            let mins = val.includes('.') ? parseInt(val.split('.')[0] || 0) + (parseInt(val.split('.')[1] || 0) / 60) : parseInt(val);
+            if (!isNaN(mins) && mins > 0) {
+                sendToFirebase(bossId, mins);
+                document.getElementById(`input-${bossId}`).value = '';
+            }
+        }
+
+        function resetFirebase(bossId) {
+            const group = document.getElementById('groupName').value.trim();
+            if (group && confirm("ล้างข้อมูลเวลาบอสตัวนี้?")) {
+                postToDiscord(bossId, "DELETE");
+                db.ref(`groups/${group}/timers/${bossId}`).remove();
+            }
         }
 
         function togglePin(cardId) {
@@ -173,144 +234,26 @@
             if (index > -1) pinnedBosses.splice(index, 1);
             else pinnedBosses.push(cardId);
             localStorage.setItem('tos_pinned_bosses', JSON.stringify(pinnedBosses));
-            
-            // Re-render ทันทีเพื่อย้ายลำดับและเปลี่ยนสีดาว
-            renderBosses(currentBosses);
-            syncFirebase(currentBosses);
-        }
-
-        function syncFirebase(bosses) {
-            const path = getGroupPath();
-            if (!path) return;
-            db.ref(path + 'timers').on('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                document.getElementById('connection-status').innerText = `● Connected: ${document.getElementById('groupName').value}`;
-                document.getElementById('connection-status').className = "text-[10px] text-green-500 font-bold uppercase tracking-widest";
-                bosses.forEach(boss => {
-                    const t = data[boss.id];
-                    if (t) {
-                        document.getElementById(`log-${boss.id}`).innerText = `ล่าสุด: ${t.user || 'Unknown'} (${t.time})`;
-                        const remain = Math.floor((t.expireTime - Date.now()) / 1000);
-                        remain > 0 ? runTimer(boss.id, remain) : showAlive(boss.id, true);
-                    } else {
-                        stopTimer(boss.id);
-                    }
-                });
-            });
-        }
-
-        async function updateFirebase(bossId, mins) {
-            if (!validateUser()) return alert("ข้อมูลไม่ครบ!");
-            const path = getGroupPath();
-            db.ref(path + 'timers/' + bossId).set({
-                expireTime: Date.now() + (mins * 60 * 1000),
-                user: document.getElementById('userName').value.trim(),
-                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-                notified: false
-            });
-        }
-
-        function manualSync(bossId) {
-            if (!validateUser()) return alert("ข้อมูลไม่ครบ!");
-            const val = document.getElementById(`input-${bossId}`).value;
-            if (val) {
-                let s = val.includes('.') ? (parseInt(val.split('.')[0])*60)+parseInt(val.split('.')[1]) : parseInt(val)*60;
-                db.ref(getGroupPath() + 'timers/' + bossId).set({
-                    expireTime: Date.now() + (s * 1000),
-                    user: document.getElementById('userName').value.trim(),
-                    time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
-                    notified: false
-                });
-                document.getElementById(`input-${bossId}`).value = '';
-            }
-        }
-
-        async function resetFirebase(bossId) {
-            if (!validateUser()) return;
-            if (confirm(`🗑️ ล้างข้อมูลบอสตัวนี้?`)) {
-                postToDiscord(bossId, "DELETE");
-                db.ref(getGroupPath() + 'timers/' + bossId).remove();
-            }
-        }
-
-        function runTimer(id, sec) {
-            if (timers[id]) clearInterval(timers[id]);
-            const timerEl = document.getElementById(`timer-${id}`);
-            const statusEl = document.getElementById(`status-${id}`);
-            if(!timerEl) return;
-            timers[id] = setInterval(() => {
-                db.ref(getGroupPath() + 'timers/' + id).once('value', snapshot => {
-                    const d = snapshot.val();
-                    if(d){
-                        const r = Math.floor((d.expireTime - Date.now())/1000);
-                        if(r <= 0) { clearInterval(timers[id]); showAlive(id, true); }
-                        else {
-                            let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
-                            timerEl.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                            statusEl.innerText = "COUNTING DOWN...";
-                            statusEl.className = "text-[10px] text-gray-400 font-bold mt-1";
-                        }
-                    }
-                });
-            }, 1000);
-        }
-
-        function showAlive(id, notify = false) {
-            const timerEl = document.getElementById(`timer-${id}`);
-            const statusEl = document.getElementById(`status-${id}`);
-            const cardEl = document.getElementById(`card-${id}`);
-            if(!timerEl) return;
-            if (timerEl.innerText !== "EVENT START! ⚔️") {
-                timerEl.innerText = "EVENT START! ⚔️";
-                timerEl.className = "timer-text text-3xl text-orange-500 font-bold";
-                statusEl.innerText = "ตีมอนปลุกบอส!";
-                statusEl.className = "text-[10px] text-orange-500 font-bold mt-1 uppercase";
-                cardEl.classList.add('alive-glow');
-                if (notify) {
-                    db.ref(getGroupPath() + 'timers/' + id).once('value', snapshot => {
-                        const d = snapshot.val();
-                        if (d && !d.notified) { postToDiscord(id, "ALIVE"); db.ref(getGroupPath() + 'timers/' + id).update({notified:true}); }
-                    });
-                }
-            }
-        }
-
-        function stopTimer(id) {
-            if (timers[id]) clearInterval(timers[id]);
-            const timerEl = document.getElementById(`timer-${id}`);
-            const statusEl = document.getElementById(`status-${id}`);
-            const cardEl = document.getElementById(`card-${id}`);
-            const logEl = document.getElementById(`log-${id}`);
-            if(!timerEl) return;
-            timerEl.innerText = "READY";
-            timerEl.className = "timer-text text-4xl text-yellow-400";
-            statusEl.innerText = "Ready to Hunt";
-            statusEl.className = "text-[10px] text-green-500 font-bold mt-1 uppercase";
-            cardEl.classList.remove('alive-glow');
-            logEl.innerText = `ยังไม่มีข้อมูลการล่า`;
+            renderBosses(); 
         }
 
         function saveProfile() {
-            const g = document.getElementById('groupName').value.trim();
-            const n = document.getElementById('userName').value.trim();
-            if (g.length<2 || n.length<2) return alert("ข้อมูลไม่ครบ!");
-            localStorage.setItem('tos_group_name', g);
-            localStorage.setItem('tos_user_name', n);
+            localStorage.setItem('tos_group_name', document.getElementById('groupName').value.trim());
+            localStorage.setItem('tos_user_name', document.getElementById('userName').value.trim());
             localStorage.setItem('tos_discord_webhook', document.getElementById('webhookUrl').value);
-            renderBosses(currentBosses);
-            syncFirebase(currentBosses);
-            alert('บันทึกสำเร็จ!');
+            location.reload(); 
         }
 
         async function postToDiscord(bossId, type) {
             const webhook = localStorage.getItem('tos_discord_webhook');
             if (!webhook) return;
-            const bossName = document.querySelector(`#card-${bossId} h3`).innerText;
-            const mapName = document.querySelector(`#card-${bossId} .text-red-500 span`).innerText;
+            const boss = currentBosses.find(b => b.id === bossId);
+            const user = document.getElementById('userName').value.trim() || "Unknown";
             const curTime = new Date().toLocaleTimeString('th-TH');
-            const user = document.getElementById('userName').value;
-            let content = type === "ALIVE" ? `🚨 @everyone **EVENT START!**\n**[${bossName}]** ปลุกบอสด่วน!\n📍 ${mapName}\n⏰ ${curTime}` : `🗑️ **${user}** ลบเวลาบอส **${bossName}**`;
-            try { await fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }); } catch (e) { }
+            let content = type === "ALIVE" ? 
+                `🚨 @everyone **EVENT START!**\n**[${boss.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n📍 สถานที่: **${boss.map}**\n⏰ เวลาปัจจุบัน: **${curTime}**\n👉 **รีบไปตีมอนเปิดสเตจด่วน!**` :
+                `🗑️ **[${user}]** ได้ทำการล้างข้อมูลเวลาของบอส **[${boss.name}]** เรียบร้อยแล้ว`;
+            try { fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }); } catch (e) {}
         }
 
         init();
