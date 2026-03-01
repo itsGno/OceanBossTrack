@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS-M Tracker V1.1.4</title>
+    <title>TOS-M Tracker V1.1.6</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -22,7 +22,7 @@
 <body class="p-4 md:p-8">
 
     <header class="max-w-2xl mx-auto text-center mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.1.4</h1>
+        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.1.6</h1>
         <div id="c-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Disconnected</div>
     </header>
 
@@ -43,7 +43,7 @@
                         <input type="password" id="_whk" oninput="_vld()" placeholder="https://..." class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                     </div>
                 </div>
-                <button id="_svB" onclick="_save()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-xs py-3 rounded-xl font-bold btn-locked">SAVE & CONNECT</button>
+                <button id="_svB" onclick="_save()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-xs py-3 rounded-xl font-bold btn-locked uppercase">Save & Connect Profile</button>
             </div>
 
             <div id="locked-fields" class="hidden flex justify-between items-center py-1">
@@ -51,9 +51,8 @@
                     <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">Status: Connected</div>
                     <div class="text-sm font-bold text-white"><span id="display-usr"></span> @ <span id="display-grp" class="text-yellow-500"></span></div>
                 </div>
-                <button onclick="_logout()" class="text-[10px] bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all">LOGOUT</button>
+                <button onclick="_logout()" class="text-[10px] bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all uppercase">Logout</button>
             </div>
-            
             <p id="_warn" class="text-[10px] text-center mt-2 font-bold uppercase"></p>
         </div>
     </div>
@@ -61,35 +60,28 @@
     <div id="b-cont" class="max-w-2xl mx-auto flex flex-col gap-6"></div>
 
     <script>
+        // Firebase Config (Obfuscated)
         const _0x1f2a = { databaseURL: "\x68\x74\x74\x70\x73\x3a\x2f\x2f\x74\x6f\x73\x2d\x62\x6f\x73\x73\x2d\x74\x72\x61\x63\x6b\x65\x72\x2d\x64\x65\x66\x61\x75\x6c\x74\x2d\x72\x74\x64\x62\x2e\x61\x73\x69\x61\x2d\x73\x6f\x75\x74\x68\x65\x61\x73\x74\x31\x2e\x66\x69\x72\x65\x62\x61\x73\x65\x64\x61\x74\x61\x62\x61\x73\x65\x2e\x61\x70\x70\x2f" };
         firebase.initializeApp(_0x1f2a);
         const _db = firebase.database();
         
         let _bsData = [], _pnBs = JSON.parse(localStorage.getItem('\x74\x6f\x73\x5f\x70\x69\x6e\x6e\x65\x64\x5f\x62\x6f\x73\x73\x65\x73') || '[]');
-        let _fbD = {}, _isE = false;
+        let _fbD = {}, _isE = false, _currG = "";
 
         function _vld() {
             const g = document.getElementById('_grp').value.trim(), n = document.getElementById('_usr').value.trim(), w = document.getElementById('_whk').value.trim();
             if (localStorage.getItem('tos_locked') === 'true') return;
             const canS = g.length >= 2;
             document.getElementById('_svB').classList.toggle('btn-locked', !canS);
-            const wrn = document.getElementById('_warn');
-            if (!canS) { wrn.innerText = "⚠️ Enter Group ID"; wrn.className = "text-[10px] text-red-500 text-center mt-2 font-bold uppercase"; }
-            else if (n.length < 2 || !w.startsWith('https://')) { wrn.innerText = "ℹ️ View Only Mode"; wrn.className = "text-[10px] text-blue-400 text-center mt-2 font-bold uppercase"; }
-            else { wrn.innerText = "✅ Full Access Ready"; wrn.className = "text-[10px] text-green-500 text-center mt-2 font-bold uppercase"; }
         }
 
         async function _init() {
             try {
                 const r = await fetch('bosses.json?v=' + Date.now());
                 _bsData = await r.json();
-                
-                const sG = localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65') || '';
-                const sN = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65') || '';
-                const sW = localStorage.getItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b') || '';
-                const isLocked = localStorage.getItem('tos_locked') === 'true';
-
-                if (isLocked && sG) {
+                const sG = localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65') || '', sN = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65') || '', sW = localStorage.getItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b') || '', isL = localStorage.getItem('tos_locked') === 'true';
+                if (isL && sG) {
+                    _currG = sG;
                     document.getElementById('input-fields').classList.add('hidden');
                     document.getElementById('locked-fields').classList.remove('hidden');
                     document.getElementById('display-usr').innerText = sN || "Guest";
@@ -97,13 +89,10 @@
                     _isE = (sN && sW.startsWith('https://'));
                     _sync(sG);
                 } else {
-                    document.getElementById('_grp').value = sG;
-                    document.getElementById('_usr').value = sN;
-                    document.getElementById('_whk').value = sW;
+                    document.getElementById('_grp').value = sG; document.getElementById('_usr').value = sN; document.getElementById('_whk').value = sW;
                 }
-
                 _rend(); _vld(); _loop();
-            } catch (e) { console.warn("Err"); }
+            } catch (e) { console.warn("Init Err"); }
         }
 
         function _rend() {
@@ -157,23 +146,26 @@
                         if (r > 0) {
                             let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
                             tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                            tmE.className = "text-4xl text-yellow-400 font-mono";
+                            tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
                             stE.innerText = "COUNTING DOWN..."; stE.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
                             cdE.classList.remove('alive-glow');
                         } else {
+                            // BOSS ALIVE!
                             tmE.innerText = "EVENT START! ⚔️"; tmE.className = "text-3xl text-event-orange font-bold";
                             stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-xs text-event-orange font-bold mt-1 uppercase";
                             cdE.classList.add('alive-glow');
                             
-                            if (!t.notified && _isE) {
-                                // ดึงเวลาปัจจุบันรวมวินาทีตามบอสสั่ง
-                                const evTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                _post(b.id, "\x41\x4c\x49\x56\x45", evTime);
-                                _db.ref(`groups/${localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65')}/timers/${b.id}`).update({ notified: true });
+                            // 🔥 ปรับแก้เงื่อนไขแจ้งเตือน: เช็คจาก Firebase โดยตรง
+                            if (t.notified === false && _isE) {
+                                // ป้องกันการส่งซ้ำด้วยการอัปเดตทันที
+                                _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
+                                
+                                const evT = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                _post(b.id, "\x41\x4c\x49\x56\x45", evT);
                             }
                         }
                     } else if (tmE) {
-                        tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono";
+                        tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
                         stE.innerText = "Ready to Hunt"; stE.className = "text-xs text-green-500 font-bold mt-1 uppercase";
                         cdE.classList.remove('alive-glow'); lgE.innerText = "No Data";
                     }
@@ -183,8 +175,14 @@
 
         function _chk(id, m) {
             if (!_isE) return;
-            const t = _fbD[id]; if (t && t.expireTime > Date.now()) { if (!confirm(`⚠️ เวลากำลังเดินอยู่ จะนับใหม่ทับข้อมูลเดิมใช่ไหม?`)) return; }
-            _push(id, m);
+            const t = _fbD[id]; if (t && t.expireTime > Date.now()) { if (!confirm(`⚠️ นับใหม่ทับข้อมูลเดิม?`)) return; }
+            const n = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65');
+            _db.ref(`groups/${_currG}/timers/${id}`).set({ 
+                expireTime: Date.now() + (m * 60 * 1000), 
+                user: n, 
+                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }), 
+                notified: false 
+            });
         }
 
         function _mchk(id) {
@@ -192,14 +190,11 @@
             _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value = '';
         }
 
-        function _push(id, m) {
-            const g = localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65'), n = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65');
-            _db.ref(`groups/${g}/timers/${id}`).set({ expireTime: Date.now() + (m * 60 * 1000), user: n, time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }), notified: false });
-        }
-
         function _rst(id) {
-            const g = localStorage.getItem('\x74\x6f\x73\x5f\x67\x72\x6f\x75\x70\x5f\x6e\x61\x6d\x65');
-            if (_isE && confirm("ล้างข้อมูลเวลาของบอสตัวนี้?")) { _post(id, "\x44\x45\x4c\x45\x54\x45"); _db.ref(`groups/${g}/timers/${id}`).remove(); }
+            if (_isE && confirm("Reset บอสตัวนี้?")) { 
+                _post(id, "\x44\x45\x4c\x45\x54\x45"); 
+                _db.ref(`groups/${_currG}/timers/${id}`).remove(); 
+            }
         }
 
         function _pin(id) {
@@ -219,23 +214,35 @@
         }
 
         function _logout() {
-            if(confirm("ต้องการเปลี่ยนกลุ่มหรือแก้ไขชื่อใช่ไหม?")) {
+            if(confirm("ยกเลิกการล็อค Profile เพื่อแก้ไขข้อมูล?")) {
                 localStorage.setItem('tos_locked', 'false');
                 location.reload();
             }
         }
 
-        async function _post(id, ty, evTime = "") {
+        async function _post(id, ty, evT = "") {
             const w = localStorage.getItem('\x74\x6f\x73\x5f\x64\x69\x73\x63\x6f\x72\x64\x5f\x77\x65\x62\x68\x6f\x6f\x6b');
             if (!w || !w.startsWith('https://')) return;
             const b = _bsData.find(x => x.id === id), u = localStorage.getItem('\x74\x6f\x73\x5f\x75\x72\x65\x74\x5f\x6e\x61\x6d\x65');
             
-            // 🔥 FORMAT ตามที่บอสสั่งเป๊ะๆ
-            let c = ty === "\x41\x4c\x49\x56\x45" ? 
-                `**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\nสถานที่: **${b.map}**\nเวลาปัจจุบัน: **${evTime}**\nรีบไปตีมอนเปิดสเตจด่วน! @everyone` : 
-                `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]**`;
+            let c = "";
+            if (ty === "\x41\x4c\x49\x56\x45") {
+                // แจ้งเตือน 4 บรรทัดตามบอสสั่ง
+                c = `EVENT START! บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n` +
+                    `สถานที่: **${b.map}**\n` +
+                    `เวลาปัจจุบัน: **${evT}**\n` +
+                    `รีบไปตีมอนเปิดสเตจด่วน! @everyone`;
+            } else {
+                c = `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]**`;
+            }
                 
-            try { fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) {}
+            try { 
+                await fetch(w, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ content: c }) 
+                }); 
+            } catch (e) { console.error("Webhook Error"); }
         }
         _init();
     </script>
