@@ -1,42 +1,107 @@
 [
   {
     "id": "mirtis",
-    "name": "Mirtis",
-    "lv": 100,
-    "type": "Field Boss",
-    "element": "Dark",
+    "name": "Mirtis (เมอร์ทิส)",
+    "respawn": 120,
     "map": "Forest of Prayers",
-    "img": "https://storage-web-tosm.exe.in.th/contents/Deathweaver-1771411846.webp",
-    "respawn": 120
+    "img": "https://i.imgur.com/83p731p.png"
   },
   {
-    "id": "rexi",
-    "name": "Rexipher",
-    "lv": 120,
-    "type": "World Boss",
-    "element": "Psycho",
-    "map": "Magis Road",
-    "img": "https://static.wikia.nocookie.net/treeofsavior/images/b/b1/CHAR_Rexipher.png/revision/latest/scale-to-width-down/300?cb=20190211112708",
-    "respawn": 240
+    "id": "helgasercle",
+    "name": "Helgasercle (เฮลก้า)",
+    "respawn": 120,
+    "map": "Mage Tower 5F",
+    "img": "https://i.imgur.com/kS9L6w4.png"
   },
   {
-    "id": "helga",
-    "name": "Helgasercle",
-    "lv": 110,
-    "type": "Field Boss",
-    "element": "Fire",
-    "map": "Royal Mausoleum Workers' Lodge",
-    "img": "https://static.wikia.nocookie.net/treeofsavior/images/e/e3/CHAR_Helgasercle.png/revision/latest?cb=20190208025305",
-    "respawn": 120
+    "id": "marnox",
+    "name": "Marnox (มาร์น็อกซ์)",
+    "respawn": 120,
+    "map": "Nuoridin Falls",
+    "img": "https://i.imgur.com/vHqY7eS.png"
   },
   {
-    "id": "dullahan",
-    "name": "Dullahan",
-    "lv": 90,
-    "type": "Field Boss",
-    "element": "Earth",
-    "map": "Roxona Market",
-    "img": "https://static.wikia.nocookie.net/treeofsavior/images/2/20/CHAR_Kartas.png/revision/latest/scale-to-width-down/300?cb=20190205030825",
-    "respawn": 120
+    "id": "rexipher",
+    "name": "Rexipher (เร็กซิเฟอร์)",
+    "respawn": 120,
+    "map": "Mage Tower 5F",
+    "img": "https://i.imgur.com/uGzX6mD.png"
+  },
+  {
+    "id": "neop",
+    "name": "Neop (นีออป)",
+    "respawn": 120,
+    "map": "Verididai Valley",
+    "img": "https://i.imgur.com/T0b4V2r.png"
+  },
+  {
+    "id": "velnia",
+    "name": "Velnia Monkey (ลิงม่วง)",
+    "respawn": 120,
+    "map": "Syla Forest",
+    "img": "https://i.imgur.com/1GvK0pQ.png"
+  },
+  {
+    "id": "blut",
+    "name": "Blut (บลัด)",
+    "respawn": 120,
+    "map": "Vilna Forest",
+    "img": "https://i.imgur.com/39hN7hG.png"
+  },
+  {
+    "id": "nuaele",
+    "name": "Nuaele (นูเอลเล่)",
+    "respawn": 120,
+    "map": "Klaipeda Outskirts",
+    "img": "https://i.imgur.com/W2O3b8x.png"
+  },
+  {
+    "id": "zaura",
+    "name": "Zaura (เซาร่า)",
+    "respawn": 120,
+    "map": "Royal Mausoleum 5F",
+    "img": "https://i.imgur.com/Xy8W8hA.png"
+  },
+  {
+    "id": "panton",
+    "name": "Panton Magician (แพนตอน)",
+    "respawn": 120,
+    "map": "Sventimas Forest",
+    "img": "https://i.imgur.com/M6LgA6G.png"
+  },
+  {
+    "id": "cerberus",
+    "name": "Cerberus (เซอร์เบอรัส)",
+    "respawn": 120,
+    "map": "Kateen Forest",
+    "img": "https://i.imgur.com/hY8o6Yx.png"
+  },
+  {
+    "id": "kubas",
+    "name": "Kubas (คูบาส)",
+    "respawn": 120,
+    "map": "Crystal Mine 3F",
+    "img": "https://i.imgur.com/RkU6f6U.png"
+  },
+  {
+    "id": "tomb_lord",
+    "name": "Tomb Lord (ทอมบ์ลอร์ด)",
+    "respawn": 120,
+    "map": "Royal Mausoleum 1F",
+    "img": "https://i.imgur.com/E8R9fUu.png"
+  },
+  {
+    "id": "Honeymeli",
+    "name": "Honeymeli Queen (ราชินีผึ้ง)",
+    "respawn": 120,
+    "map": "Dina Bee Farm",
+    "img": "https://i.imgur.com/S8W9pUv.png"
+  },
+  {
+    "id": "linkroller",
+    "name": "Linkroller (ลิงก์โรลเลอร์)",
+    "respawn": 120,
+    "map": "Vieta Gorge",
+    "img": "https://i.imgur.com/z8pG7uV.png"
   }
 ]
