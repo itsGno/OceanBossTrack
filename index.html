@@ -3,19 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS M - Guild Tracker Pro</title>
+    <title>TOS M - Guild Tracker [STRICT & FINAL]</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
         body { font-family: 'Kanit', sans-serif; background-color: #0b101a; color: #e2e8f0; }
-        .boss-card { border: 1px solid #1e293b; transition: all 0.4s ease; }
+        #bossContainer { display: flex; flex-direction: column; gap: 1.5rem; }
+        .boss-card { border: 1px solid #1e293b; transition: all 0.4s ease; position: relative; }
         .boss-card.pinned { border-color: #fbbf24; background-color: #1e1b11; order: -1; }
-        .alive-glow { animation: shadow-pulse 1.5s infinite; border-color: #4ecca3 !important; }
+        .alive-glow { animation: shadow-pulse 1.5s infinite; border-color: #f97316 !important; }
         @keyframes shadow-pulse {
-            0% { box-shadow: 0 0 0 0px rgba(78, 204, 163, 0.4); }
-            100% { box-shadow: 0 0 0 15px rgba(78, 204, 163, 0); }
+            0% { box-shadow: 0 0 0 0px rgba(249, 115, 22, 0.4); }
+            100% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
+        }
+        .btn-locked { opacity: 0.2; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
+        .name-invalid { border-color: #ef4444 !important; animation: shake 0.4s; background-color: rgba(239, 68, 68, 0.1) !important; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
         }
     </style>
 </head>
@@ -23,53 +31,61 @@
 
     <header class="max-w-2xl mx-auto text-center mb-6">
         <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS M Guild Pro</h1>
-        <div id="connection-status" class="text-[10px] text-yellow-500 font-bold tracking-widest uppercase">Connecting...</div>
+        <div id="connection-status" class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Connecting...</div>
     </header>
 
     <div class="max-w-2xl mx-auto mb-6 space-y-3">
         <div class="bg-[#1e293b] p-4 rounded-3xl border border-gray-700 shadow-xl">
             <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-[10px] text-gray-400 font-bold uppercase">Your Name (ชื่อคนกด)</label>
-                    <input type="text" id="userName" placeholder="ใส่ชื่อเล่น..." 
-                           class="w-full bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white mt-1 focus:border-blue-500 outline-none">
+                <div class="flex flex-col">
+                    <label class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Your Name (Required)</label>
+                    <input type="text" id="userName" oninput="validateUser()" placeholder="ใส่ชื่อเล่น..." 
+                           class="bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-blue-500 transition-all">
                 </div>
-                <div>
-                    <label class="text-[10px] text-gray-400 font-bold uppercase">Discord Webhook</label>
+                <div class="flex flex-col">
+                    <label class="text-[10px] text-gray-400 font-bold mb-1 uppercase">Discord Webhook</label>
                     <input type="password" id="webhookUrl" placeholder="Webhook URL..." 
-                           class="w-full bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white mt-1 focus:border-blue-500 outline-none">
+                           class="bg-black/40 border border-gray-600 rounded-xl px-4 py-2 text-xs text-white outline-none">
                 </div>
             </div>
-            <button onclick="saveProfile()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] py-2 rounded-xl font-bold transition-all shadow-lg active:scale-95">บันทึกข้อมูลส่วนตัว (Save Profile)</button>
+            <button onclick="saveProfile()" class="w-full mt-3 bg-blue-600 hover:bg-blue-500 text-white text-[11px] py-2 rounded-xl font-bold transition-all shadow-lg active:scale-95">Save & Start Tracker</button>
         </div>
     </div>
 
-    <div id="bossContainer" class="max-w-2xl mx-auto flex flex-col gap-6 pb-20">
-        </div>
+    <div id="bossContainer" class="max-w-2xl mx-auto"></div>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const firebaseConfig = {
-            databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebasedatabase.app/" 
-        };
+        // CONFIG - Replace with your DB if needed
+        const firebaseConfig = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
+        
         let timers = {};
         let pinnedBosses = JSON.parse(localStorage.getItem('tos_pinned_bosses') || '[]');
 
-        // --- 2. INITIALIZE ---
         async function init() {
             try {
                 const response = await fetch('bosses.json?v=' + Date.now());
                 const bosses = await response.json();
                 renderBosses(bosses);
                 syncFirebase(bosses);
-                
-                // Load Local Profile
                 if(localStorage.getItem('tos_user_name')) document.getElementById('userName').value = localStorage.getItem('tos_user_name');
                 if(localStorage.getItem('tos_discord_webhook')) document.getElementById('webhookUrl').value = localStorage.getItem('tos_discord_webhook');
+                validateUser(); 
             } catch (e) { console.error(e); }
+        }
+
+        function validateUser() {
+            const name = document.getElementById('userName').value.trim();
+            const btns = document.querySelectorAll('.action-btn');
+            if (name.length >= 2) {
+                btns.forEach(b => b.classList.remove('btn-locked'));
+                document.getElementById('userName').classList.remove('name-invalid');
+                return true;
+            } else {
+                btns.forEach(b => b.classList.add('btn-locked'));
+                return false;
+            }
         }
 
         function renderBosses(bosses) {
@@ -77,57 +93,60 @@
             container.innerHTML = bosses.map(boss => {
                 const isPinned = pinnedBosses.includes(`card-${boss.id}`);
                 return `
-                <div class="boss-card bg-[#161b26] rounded-3xl p-6 flex flex-col sm:flex-row gap-6 relative ${isPinned ? 'pinned' : ''}" id="card-${boss.id}">
-                    <div class="w-full sm:w-36 h-36 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-800 shadow-md">
-                        <img src="${boss.img}" class="w-full h-full object-cover">
+                <div class="boss-card bg-[#161b26] rounded-3xl p-6 flex flex-col sm:flex-row gap-6 ${isPinned ? 'pinned' : ''}" id="card-${boss.id}">
+                    <div class="relative w-full sm:w-36 h-36 flex-shrink-0">
+                        <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800 shadow-md">
+                            <img src="${boss.img}" class="w-full h-full object-cover">
+                        </div>
+                        <button onclick="togglePin('card-${boss.id}')" class="absolute -top-2 -left-2 bg-[#1e293b] rounded-full p-1.5 shadow-lg border border-gray-700 transition-all active:scale-125">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${isPinned ? 'text-yellow-400 fill-current' : 'text-gray-500'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
                     </div>
-                    
+
                     <div class="flex-1">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-2xl font-bold text-white">${boss.name}</h3>
                                 <div class="text-red-500 text-[11px] font-bold uppercase mt-1">📍 <span>${boss.map}</span></div>
-                                <div id="log-${boss.id}" class="text-[9px] text-gray-500 mt-1 italic">ยังไม่มีข้อมูลการล่า</div>
+                                <div id="log-${boss.id}" class="text-[9px] text-gray-500 mt-1 italic leading-tight">ยังไม่มีข้อมูล</div>
                             </div>
-                            <button onclick="togglePin('card-${boss.id}')" class="pin-icon text-gray-600 hover:text-yellow-400 p-1 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"></path><path d="M7 10v4a2 2 0 0 1-2 2H3"></path><path d="M11 10v10a2 2 0 0 0 2 2h2"></path><path d="M15 10v4a2 2 0 0 0 2 2h2"></path><path d="M19 10v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2"></path><line x1="12" y1="2" x2="12" y2="6"></line></svg>
+                            <button onclick="resetFirebase('${boss.id}')" class="action-btn text-gray-800 hover:text-red-500 p-2 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
 
                         <div class="mt-4 bg-black/60 rounded-2xl py-3 px-2 text-center border border-gray-800">
-                            <div id="timer-${boss.id}" class="timer-text text-4xl text-yellow-400 uppercase">READY</div>
-                            <div id="status-${boss.id}" class="text-[10px] text-green-500 font-bold mt-1 uppercase tracking-widest">Ready to Hunt</div>
+                            <div id="timer-${boss.id}" class="timer-text text-4xl text-yellow-400 font-mono">READY</div>
+                            <div id="status-${boss.id}" class="text-[10px] text-green-500 font-bold mt-1 uppercase">Ready to Hunt</div>
                         </div>
 
                         <div class="mt-5 grid grid-cols-1 gap-2">
-                            <button onclick="updateFirebase('${boss.id}', ${boss.respawn})" class="w-full bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all">เพิ่งตาย (นับ ${boss.respawn} นาที)</button>
+                            <button onclick="updateFirebase('${boss.id}', ${boss.respawn})" class="action-btn w-full bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl shadow-lg active:scale-95 transition-all">เพิ่งตาย (${boss.respawn} นาที)</button>
                             <div class="flex gap-2">
-                                <input type="text" id="input-${boss.id}" placeholder="เช่น 10 หรือ 1.30" class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-sm text-white text-center outline-none focus:border-purple-500">
-                                <button onclick="manualSync('${boss.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-4 rounded-xl font-bold shadow-md">เริ่มนับ</button>
+                                <input type="text" id="input-${boss.id}" placeholder="เช่น 10 หรือ 1.30" class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white text-center outline-none">
+                                <button onclick="manualSync('${boss.id}')" class="action-btn bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-4 rounded-xl font-bold transition-all active:scale-95">เริ่มนับ</button>
                             </div>
                         </div>
                     </div>
-
-                    <button onclick="resetFirebase('${boss.id}')" class="absolute top-2 right-2 text-gray-800 hover:text-red-500 p-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
                 </div>
                 `; }).join('');
         }
 
-        // --- 3. CORE LOGIC (With Safety Protection) ---
         function syncFirebase(bosses) {
             db.ref('timers').on('value', (snapshot) => {
                 const data = snapshot.val() || {};
-                document.getElementById('connection-status').innerText = "● Live Syncing (Guild Shared)";
-                document.getElementById('connection-status').className = "text-[10px] text-green-500 font-bold tracking-widest uppercase";
-
+                document.getElementById('connection-status').innerText = "● Live Syncing (Shared)";
+                document.getElementById('connection-status').className = "text-[10px] text-green-500 font-bold uppercase tracking-widest";
                 bosses.forEach(boss => {
                     const t = data[boss.id];
                     if (t) {
-                        document.getElementById(`log-${boss.id}`).innerText = `ล่าสุดโดย: ${t.user || 'Unknown'} (${t.time})`;
+                        document.getElementById(`log-${boss.id}`).innerText = `ล่าสุด: ${t.user || 'Unknown'} (${t.time})`;
                         const remain = Math.floor((t.expireTime - Date.now()) / 1000);
-                        remain > 0 ? runTimer(boss.id, remain) : showAlive(boss.id);
+                        remain > 0 ? runTimer(boss.id, remain) : showAlive(boss.id, true);
                     } else {
                         stopTimer(boss.id);
                         document.getElementById(`log-${boss.id}`).innerText = `ยังไม่มีข้อมูลการล่า`;
@@ -137,64 +156,76 @@
         }
 
         async function updateFirebase(bossId, mins) {
-            const userName = document.getElementById('userName').value || "ใครบางคน";
-            const confirmAction = confirm(`⚔️ ยืนยันว่าบอสตัวนี้เพิ่งตายใช่หรือไม่?`);
-            if (!confirmAction) return;
-
-            // Check if already running to prevent overwrite
-            const snapshot = await db.ref('timers/' + bossId).once('value');
-            if (snapshot.exists() && Math.floor((snapshot.val().expireTime - Date.now())/1000) > 0) {
-                if (!confirm("⚠️ บอสตัวนี้กำลังนับถอยหลังอยู่ คุณต้องการตั้งเวลาใหม่ทับไปเลยใช่ไหม?")) return;
-            }
-
-            const expire = Date.now() + (mins * 60 * 1000);
+            if (!validateUser()) return alert("⚠️ ใส่ชื่อเล่นก่อนครับบอส!");
+            const name = document.getElementById('userName').value.trim();
+            if (!confirm(`⚔️ [${name}] ยืนยันการนับถอยหลัง?`)) return;
+            
             db.ref('timers/' + bossId).set({
-                expireTime: expire,
-                user: userName,
-                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                expireTime: Date.now() + (mins * 60 * 1000),
+                user: name,
+                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                notified: false // Reset notification flag for new round
             });
             postToDiscord(bossId, "START");
         }
 
         function manualSync(bossId) {
+            if (!validateUser()) return alert("⚠️ ใส่ชื่อเล่นก่อนครับบอส!");
             const val = document.getElementById(`input-${bossId}`).value;
-            const userName = document.getElementById('userName').value || "ใครบางคน";
-            if (val && val > 0) {
-                let s = val.includes('.') ? (parseInt(val.split('.')[0]) * 60) + (parseInt(val.split('.')[1]) || 0) : parseInt(val) * 60;
+            const name = document.getElementById('userName').value.trim();
+            if (val && val !== "") {
+                let s = 0;
+                if (val.includes('.')) {
+                    const p = val.split('.');
+                    s = (parseInt(p[0] || 0) * 60) + parseInt(p[1] || 0);
+                } else { s = parseInt(val) * 60; }
+                if (!confirm(`⏱️ [${name}] เริ่มนับที่ ${val} ใช่ไหม?`)) return;
+                
                 db.ref('timers/' + bossId).set({
                     expireTime: Date.now() + (s * 1000),
-                    user: userName,
-                    time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    user: name,
+                    time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                    notified: false
                 });
                 document.getElementById(`input-${bossId}`).value = '';
+                postToDiscord(bossId, "START");
             }
         }
 
-        function resetFirebase(bossId) {
-            if(confirm("ยกเลิกการนับเวลาของบอสตัวนี้?")) db.ref('timers/' + bossId).remove();
+        async function resetFirebase(bossId) {
+            if (!validateUser()) return;
+            const name = document.getElementById('userName').value.trim();
+            const bossName = document.querySelector(`#card-${bossId} h3`).innerText;
+            if (confirm(`🗑️ คุณ (${name}) ต้องการล้างค่าของ ${bossName}?`)) {
+                db.ref('timers/' + bossId).remove();
+            }
         }
 
-        // --- 4. ENGINE ---
         function runTimer(id, sec) {
             if (timers[id]) clearInterval(timers[id]);
             const timerEl = document.getElementById(`timer-${id}`);
             const statusEl = document.getElementById(`status-${id}`);
             const cardEl = document.getElementById(`card-${id}`);
-
-            statusEl.innerText = "COUNTING DOWN...";
-            statusEl.className = "text-[10px] text-gray-500 font-bold mt-1 uppercase";
-            timerEl.className = "timer-text text-4xl text-yellow-400";
-            cardEl.classList.remove('alive-glow');
-
+            
             timers[id] = setInterval(() => {
-                if (sec <= 0) {
-                    clearInterval(timers[id]);
-                    showAlive(id, true);
-                    return;
-                }
-                let h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-                timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                sec--;
+                const now = Date.now();
+                db.ref('timers/' + id).once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const remain = Math.floor((data.expireTime - now) / 1000);
+                        if (remain <= 0) {
+                            clearInterval(timers[id]);
+                            showAlive(id, true);
+                        } else {
+                            let h = Math.floor(remain / 3600), m = Math.floor((remain % 3600) / 60), s = remain % 60;
+                            timerEl.innerText = `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                            statusEl.innerText = "COUNTING DOWN...";
+                            statusEl.className = "text-[10px] text-gray-500 font-bold mt-1 uppercase";
+                            timerEl.className = "timer-text text-4xl text-yellow-400 font-mono";
+                            cardEl.classList.remove('alive-glow');
+                        }
+                    }
+                });
             }, 1000);
         }
 
@@ -202,13 +233,27 @@
             const timerEl = document.getElementById(`timer-${id}`);
             const statusEl = document.getElementById(`status-${id}`);
             const cardEl = document.getElementById(`card-${id}`);
-            if (timerEl.innerText !== "BOSS ALIVE! ⚔️") {
-                timerEl.innerText = "BOSS ALIVE! ⚔️";
-                timerEl.className = "timer-text text-4xl text-green-400";
-                statusEl.innerText = "ALIVE NOW - GO HUNT!";
-                statusEl.className = "text-[10px] text-green-500 font-bold mt-1 uppercase";
+            const nowTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            if (timerEl.innerText !== "EVENT START! ⚔️") {
+                timerEl.innerText = "EVENT START! ⚔️";
+                timerEl.className = "timer-text text-3xl text-orange-500 font-bold";
+                statusEl.innerHTML = `ตีมอนปลุกบอส! <br><span class="text-white/50 text-[9px] mt-1">เริ่ม: ${nowTime}</span>`;
+                statusEl.className = "text-[10px] text-orange-500 font-bold mt-1 uppercase text-center leading-tight";
                 cardEl.classList.add('alive-glow');
-                if (notify) postToDiscord(id, "ALIVE");
+
+                // SYNC NOTIFICATION LOGIC - PUSH ONLY ONCE GLOBALLY
+                if (notify) {
+                    const bossRef = db.ref('timers/' + id);
+                    bossRef.once('value', (snapshot) => {
+                        const data = snapshot.val();
+                        // Send Discord ONLY if it hasn't been sent yet for this round
+                        if (data && data.notified === false) {
+                            postToDiscord(id, "ALIVE");
+                            bossRef.update({ notified: true });
+                        }
+                    });
+                }
             }
         }
 
@@ -223,38 +268,49 @@
             document.getElementById(`card-${id}`).classList.remove('alive-glow');
         }
 
-        // --- 5. HELPERS ---
-        function saveProfile() {
-            localStorage.setItem('tos_user_name', document.getElementById('userName').value);
-            localStorage.setItem('tos_discord_webhook', document.getElementById('webhookUrl').value);
-            alert('บันทึกข้อมูลส่วนตัวแล้ว!');
-        }
-
         function togglePin(cardId) {
             const card = document.getElementById(cardId);
+            const pinBtn = card.querySelector('svg');
             card.classList.toggle('pinned');
+            if (card.classList.contains('pinned')) { pinBtn.classList.add('text-yellow-400', 'fill-current'); }
+            else { pinBtn.classList.remove('text-yellow-400', 'fill-current'); }
             pinnedBosses = Array.from(document.querySelectorAll('.boss-card.pinned')).map(c => c.id);
             localStorage.setItem('tos_pinned_bosses', JSON.stringify(pinnedBosses));
         }
 
+        function saveProfile() {
+            const name = document.getElementById('userName').value.trim();
+            if (name.length < 2) return alert("ใส่ชื่อเล่นก่อนครับบอส!");
+            localStorage.setItem('tos_user_name', name);
+            localStorage.setItem('tos_discord_webhook', document.getElementById('webhookUrl').value);
+            validateUser();
+            alert('บันทึกสำเร็จ!');
+        }
+
         async function postToDiscord(bossId, type) {
             const webhook = localStorage.getItem('tos_discord_webhook');
-            if (!webhook) return;
+            if (!webhook || webhook === "") return;
+            
             const bossName = document.querySelector(`#card-${bossId} h3`).innerText;
             const mapName = document.querySelector(`#card-${bossId} .text-red-500 span`).innerText;
-            const userName = document.getElementById('userName').value || "ใครบางคน";
+            const curTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-            let content = type === "START" 
-                ? `⏱️ **${userName}** เริ่มนับถอยหลัง **${bossName}**`
-                : `🚨 **@everyone ${bossName} เกิดแล้วที่ ${mapName}!**`;
-
+            let content = "";
+            if (type === "START") {
+                const user = document.getElementById('userName').value || "Unknown";
+                content = `⏱️ **${user}** เริ่มนับถอยหลัง **${bossName}**\n📍 สถานที่: **${mapName}**\n🕒 เวลาที่กด: ${curTime}`;
+            } else if (type === "ALIVE") {
+                // FIXED SINGLE NOTIFICATION FORMAT
+                content = `🚨 @everyone **EVENT START!**\n**[${bossName}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n📍 สถานที่: **${mapName}**\n⏰ เวลาปัจจุบัน: ${curTime}\n👉 รีบไปตีมอนเปิดสเตจด่วน!`;
+            }
+            
             try {
                 await fetch(webhook, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content: content })
                 });
-            } catch (e) {}
+            } catch (e) { console.error("Discord Error:", e); }
         }
 
         init();
