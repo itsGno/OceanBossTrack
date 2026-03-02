@@ -20,7 +20,7 @@
   {
     "id": "strong_throneweaver",
     "name": "Strong Throneweaver",
-    "respawn": 120,
+    "respawn": 100,
     "map": "Nefritas Cliff",
     "element": "Earth",
     "race": "Insects",
@@ -29,10 +29,10 @@
   {
     "id": "strong_nepenthes",
     "name": "Strong Nepenthes",
-    "respawn": 120,
+    "respawn": 100,
     "map": "Tenet Garden",
-    "element": "Earth (ดิน)",
-    "race": "Plant (พืช)",
+    "element": "Earth",
+    "race": "Plant",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_nepenthes.png"
   },
   {
@@ -40,14 +40,14 @@
     "name": "Cowardly Cyclops",
     "respawn": 120,
     "map": "Tenet Church B1F",
-    "element": "Earth (ดิน)",
-    "race": "Devil (ปีศาจ)",
+    "element": "Dark",
+    "race": "Devil",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_strongholder.png"
   },
   {
     "id": "strong_malletwyvern",
     "name": "Strong Malletwyvern",
-    "respawn": 120,
+    "respawn": 100,
     "map": "Tenet Church 1F",
     "element": "Dark",
     "race": "Aberration",
@@ -56,10 +56,10 @@
   {
     "id": "strong_necrovanter",
     "name": "Strong Necrovanter",
-    "respawn": 120,
+    "respawn": 130,
     "map": "Tenet Church 2F",
-    "element": "Earth (ดิน)",
-    "race": "Devil (ปีศาจ)",
+    "element": "Dark",
+    "race": "Devil",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_necrovanter.png"
   },
   {
@@ -67,8 +67,8 @@
     "name": "Strong Iltiswort",
     "respawn": 120,
     "map": "Dadan Jungle",
-    "element": "Earth (ดิน)",
-    "race": "Plant (พืช)",
+    "element": "Earth",
+    "race": "Plant",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_iltiswort.png"
   },
   {
@@ -76,8 +76,8 @@
     "name": "Cowardly Mummygust",
     "respawn": 120,
     "map": "Novaha Assembly Hall",
-    "element": "Ice (น้ำแข็ง)",
-    "race": "Mutant (กลายพันธุ์)",
+    "element": "Ice",
+    "race": "Aberration",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_mummyghast.png"
   },
   {
@@ -205,5 +205,221 @@
     "element": "Earth",
     "race": "Plant",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_bramble.png"
+  },
+  {
+    "id": "cowardly_vearkaras",
+    "name": "Cowardly Vearkaras",
+    "respawn": 120,
+    "map": "Zachariel Crossroads",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_taumas.png"
+  },
+  {
+    "id": "strong_thumlord",
+    "name": "Strong Thumlord",
+    "respawn": 120,
+    "map": "Royal Mausoleum 1F",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_taumas.png"
+  },
+  {
+    "id": "strong_gorkas",
+    "name": "Strong Gorkas",
+    "respawn": 120,
+    "map": "Royal Mausoleum 2F",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/icon_item_nothing.png"
+  },
+  {
+    "id": "angry_rexipher",
+    "name": "Angry Rexipher",
+    "respawn": 120,
+    "map": "Royal Mausoleum 3F",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_lecifer.png"
+  },
+  {
+    "id": "cowardly_scorpio",
+    "name": "Cowardly Scorpio",
+    "respawn": 120,
+    "map": "Baron Allerno",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_confinedion.png"
+  },
+  {
+    "id": "strong_corrupted",
+    "name": "Strong Corrupted",
+    "respawn": 120,
+    "map": "Aqueduct Bridge Area",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_fallen_statue.png"
+  },
+  {
+    "id": "strong_blood",
+    "name": "Strong Blood",
+    "respawn": 120,
+    "map": "Demon Prison District 1",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_taumas.png"
+  },
+  {
+    "id": "cowardly_nuaele",
+    "name": "Cowardly Nuaele",
+    "respawn": 120,
+    "map": "Demon Prison District 3",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_nuaelle.png"
+  },
+  {
+    "id": "strong_dionysus",
+    "name": "Strong Dionysus",
+    "respawn": 120,
+    "map": "Demon Prison District 4",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_netherbovine.png"
+  },
+  {
+    "id": "angry_demon_lord_hauberk",
+    "name": "Angry Demon Lord Hauberk",
+    "respawn": 120,
+    "map": "Demon Prison District 5",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_hauberk.png"
+  },
+  {
+    "id": "strong_chapparition",
+    "name": "Strong Chapparition",
+    "respawn": 120,
+    "map": "Goddess Ancient Garden",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_chapparition.png"
+  },
+  {
+    "id": "cowardly_devilglove",
+    "name": "Cowardly Devilglove",
+    "respawn": 120,
+    "map": "Fedimian Suburbs",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_devilglove.png"
+  },
+  {
+    "id": "strong_salamander",
+    "name": "Strong Salamander",
+    "respawn": 120,
+    "map": "Mage Tower 1F",
+    "element": "Fire",
+    "race": "Beast",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/m_boss_salamander.png"
+  },
+  {
+    "id": "strong_mineloader",
+    "name": "Strong Mineloader",
+    "respawn": 120,
+    "map": "Mage Tower 2F",
+    "element": "Lightning",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_mineloader.png"
+  },
+  {
+    "id": "indignant_helga_sircle",
+    "name": "Indignant Helga Sircle",
+    "respawn": 120,
+    "map": "Mage Tower 3F",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_helgasercle.png"
+  },
+  {
+    "id": "cowardly_glackuman",
+    "name": "Cowardly Glackuman",
+    "respawn": 120,
+    "map": "Penitence Route",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_glackuman.png"
+  },
+  {
+    "id": "strong_fireload",
+    "name": "Strong Fireload",
+    "respawn": 120,
+    "map": "Main Building",
+    "element": "Fire",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_fireload.png"
+  },
+  {
+    "id": "strong_rtiteris",
+    "name": "Strong Riteris",
+    "respawn": 120,
+    "map": "Grand Corridor",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/id_boss_riteris.png"
+  },
+  {
+    "id": "indignant_naktis",
+    "name": "Indignant Naktis",
+    "respawn": 120,
+    "map": "Sanctuary",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_naktis.png"
+  },
+  {
+    "id": "cowardly_gaigalas",
+    "name": "Cowardly Gaigalas",
+    "respawn": 120,
+    "map": "Laukyme Swamp",
+    "element": "Fire",
+    "race": "Beast",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_gaigalas.png"
+  },
+  {
+    "id": "strong_teraox",
+    "name": "Strong Teraox",
+    "respawn": 120,
+    "map": "Tyla Monastery",
+    "element": "Earth",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_teraox.png"
+  },
+  {
+    "id": "strong_ferretmarauder",
+    "name": "Strong Ferretmarauder",
+    "respawn": 120,
+    "map": "Bellai Rainforest",
+    "element": "Earth",
+    "race": "Beast",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_ferretmarauder.png"
+  },
+  {
+    "id": "strong_kirmeleech",
+    "name": "Strong Kirmeleech",
+    "respawn": 120,
+    "map": "Zeraha",
+    "element": "Dark",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_kimeleech.png"
+  },
+  {
+    "id": "indignant_zaura",
+    "name": "Indignant Zaura",
+    "respawn": 120,
+    "map": "Seir Rainforest",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_zawra.png"
   }
 ]
