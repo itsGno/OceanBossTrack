@@ -4,8 +4,8 @@
     "name": "Cowardly Red Bube Warrior",
     "respawn": 150,
     "map": "Siauliai Miners Village",
-    "element": "Fire (ไฟ)",
-    "race": "Beast (อมนุษย์)",
+    "element": "Fire",
+    "race": "Beast",
     "img": "https://www.tosbase.com/content/img/icons/monsters/mon_goblin_warrior_red.png"
   },
   {
@@ -13,8 +13,8 @@
     "name": "Strong Spector Lord",
     "respawn": 120,
     "map": "Crystal Mine",
-    "element": "Earth (ดิน)",
-    "race": "Devil (ปีศาจ)",
+    "element": "Earth",
+    "race": "Devil",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_spector_m.png"
   },
   {
@@ -22,8 +22,8 @@
     "name": "Strong Throneweaver",
     "respawn": 120,
     "map": "Nefritas Cliff",
-    "element": "Earth (ดิน)",
-    "race": "Insect (แมลง)",
+    "element": "Earth",
+    "race": "Insects",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_throneweaver.png"
   },
   {
@@ -45,6 +45,15 @@
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_strongholder.png"
   },
   {
+    "id": "strong_malletwyvern",
+    "name": "Strong Malletwyvern",
+    "respawn": 120,
+    "map": "Tenet Church 1F",
+    "element": "Dark",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_malletwyvern.png"
+  },
+  {
     "id": "strong_necrovanter",
     "name": "Strong Necrovanter",
     "respawn": 120,
@@ -52,15 +61,6 @@
     "element": "Earth (ดิน)",
     "race": "Devil (ปีศาจ)",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_necrovanter.png"
-  },
-  {
-    "id": "strong_malletwyvern",
-    "name": "Strong Malletwyvern",
-    "respawn": 120,
-    "map": "Tenet Church 1F",
-    "element": "Earth (ดิน)",
-    "race": "Mutant (กลายพันธุ์)",
-    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_malletwyvern.png"
   },
   {
     "id": "strong_iltiswort",
@@ -83,10 +83,10 @@
   {
     "id": "strong_velniamonkey",
     "name": "Strong Velniamonkey",
-    "respawn": 120,
+    "respawn": 240,
     "map": "Novaha Annex",
-    "element": "Holy (ศักดิ์สิทธิ์)",
-    "race": "Wild (สัตว์)",
+    "element": "Light",
+    "race": "Beast",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_velniamonkey.png"
   },
   {
@@ -94,8 +94,116 @@
     "name": "Indignant Deathweaver",
     "respawn": 120,
     "map": "Novaha Institute",
-    "element": "Holy (ศักดิ์สิทธิ์)",
-    "race": "Devil (ปีศาจ)",
+    "element": "Dark",
+    "race": "Devil",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_deathweaver.png"
+  },
+  {
+    "id": "cowardly_clymen",
+    "name": "Cowardly Clymen",
+    "respawn": 120,
+    "map": "Cobalt Forest",
+    "element": "Fire",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_clymen.png"
+  },
+  {
+    "id": "strong_mothtem",
+    "name": "Strong Mothtem",
+    "respawn": 120,
+    "map": "Septyni Glen",
+    "element": "Lightning",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_mothstem.png"
+  },
+  {
+    "id": "strong_tutu",
+    "name": "Strong Tutu",
+    "respawn": 120,
+    "map": "Pelke Shrine Ruins",
+    "element": "Ice",
+    "race": "Beast",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_tutu.png"
+  },
+  {
+    "id": "indignant_hydra",
+    "name": "Indignant Hydra",
+    "respawn": 120,
+    "map": "Absenta Reservoir",
+    "element": "Ice",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_hydra.png"
+  },
+  {
+    "id": "cowardly_reaverpede",
+    "name": "Cowardly Reaverpede",
+    "respawn": 120,
+    "map": "Delmore Hamlet",
+    "element": "Earth",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_reaverpede.png"
+  },
+  {
+    "id": "strong_grinender",
+    "name": "Strong Grinender",
+    "respawn": 120,
+    "map": "Delmore Manor",
+    "element": "Fire",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_grinender.png"
+  },
+  {
+    "id": "indignant_red_rambandgad",
+    "name": "Indignant Red Rambandgad",
+    "respawn": 120,
+    "map": "Delmore Outskirts",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_taumas.png"
+  },
+  {
+    "id": "strong_taumas",
+    "name": "Strong Taumas",
+    "respawn": 120,
+    "map": "Uskis Arable Land",
+    "element": "Earth",
+    "race": "Beast",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_taumas.png"
+  },
+  {
+    "id": "cowardly_manticen",
+    "name": "Cowardly Manticen",
+    "respawn": 120,
+    "map": "Spring Light Woods",
+    "element": "Lightning",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_manticen.png"
+  },
+  {
+    "id": "strong_chafer",
+    "name": "Strong Chafer",
+    "respawn": 120,
+    "map": "Gate Route",
+    "element": "Fire",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_chafer.png"
+  },
+  {
+    "id": "strong_archon",
+    "name": "Strong Archon",
+    "respawn": 120,
+    "map": "Sirdgela Forest",
+    "element": "Dark",
+    "race": "Devil",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_archon.png"
+  },
+  {
+    "id": "indignant_bramble",
+    "name": "Indignant Bramble",
+    "respawn": 120,
+    "map": "Kvailas Forest",
+    "element": "Earth",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_bramble.png"
   }
 ]
