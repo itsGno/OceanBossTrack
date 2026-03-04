@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS-M Tracker V1.3.0 - EP 1-11</title>
+    <title>TOS-M Tracker V1.3.0 - Sticky Pinned</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -166,7 +166,13 @@
 
         function _rend() {
             const c = document.getElementById('b-cont');
-            const filtered = _bsData.filter(b => _curEP === "all" || String(b.ep) === _curEP);
+            
+            // ปรับ logic: แสดงบอสที่ (ตรงกับ EP ที่เลือก) "หรือ" (เป็นบอสที่ปักหมุดไว้)
+            const filtered = _bsData.filter(b => {
+                const isPinned = _pnBs.includes(`card-${b.id}`);
+                const matchesEP = (_curEP === "all" || String(b.ep) === _curEP);
+                return isPinned || matchesEP;
+            });
             
             c.innerHTML = filtered.map(b => {
                 const p = _pnBs.includes(`card-${b.id}`), l = _isE ? "" : "btn-locked";
@@ -259,7 +265,6 @@
                             cdE.classList.add('alive-glow');
                             if (t.notified === false && _isE) {
                                 _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
-                                // ใช้เวลาไทยในการแสดงผล
                                 const thTime = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                                 _post(b.id, "ALIVE", thTime);
                             }
@@ -324,8 +329,6 @@
             const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name');
             const rId = role_ids[g] || ""; 
             const mention = rId ? `<@&${rId}>` : `@${g}`;
-            
-            // ดึงเวลาปัจจุบันประเทศไทย
             const now = evT || new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
             let c = "";
