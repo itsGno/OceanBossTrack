@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS-M Tracker V1.2.3 - Auto-Reset Edition</title>
+    <title>TOS-M Tracker V1.3.0 - EP 1-11</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -18,17 +18,36 @@
         .btn-locked { opacity: 0.15; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
         .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
         .text-event-orange { color: #f97316 !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
+        
+        .filter-btn { 
+            border: 1px solid #334155; 
+            padding: 0.4rem 0.8rem; 
+            border-radius: 12px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            transition: all 0.2s; 
+            background: #1e293b;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .filter-btn.active { 
+            background-color: #f59e0b !important; 
+            color: #000 !important; 
+            border-color: #f59e0b !important; 
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); 
+        }
+        
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <header class="max-w-2xl mx-auto text-center mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.2.3</h1>
+        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.3.0</h1>
         <div id="c-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Disconnected</div>
     </header>
 
-    <div class="max-w-2xl mx-auto mb-6">
+    <div class="max-w-2xl mx-auto mb-6 flex flex-col gap-4">
         <div id="auth-card" class="bg-gray-800 p-4 rounded-3xl border border-gray-700 shadow-xl">
             <div id="input-fields">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -63,6 +82,21 @@
                 <button onclick="_logout()" class="text-[10px] bg-red-900/20 text-red-400 border border-red-900/50 px-3 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all uppercase">Logout</button>
             </div>
         </div>
+
+        <div class="flex flex-wrap gap-2 justify-start py-2" id="ep-filters">
+            <button onclick="_filterEP('all')" class="filter-btn active" id="f-all">All EP</button>
+            <button onclick="_filterEP('1')" class="filter-btn" id="f-1">EP 1</button>
+            <button onclick="_filterEP('2')" class="filter-btn" id="f-2">EP 2</button>
+            <button onclick="_filterEP('3')" class="filter-btn" id="f-3">EP 3</button>
+            <button onclick="_filterEP('4')" class="filter-btn" id="f-4">EP 4</button>
+            <button onclick="_filterEP('5')" class="filter-btn" id="f-5">EP 5</button>
+            <button onclick="_filterEP('6')" class="filter-btn" id="f-6">EP 6</button>
+            <button onclick="_filterEP('7')" class="filter-btn" id="f-7">EP 7</button>
+            <button onclick="_filterEP('8')" class="filter-btn" id="f-8">EP 8</button>
+            <button onclick="_filterEP('9')" class="filter-btn" id="f-9">EP 9</button>
+            <button onclick="_filterEP('10')" class="filter-btn" id="f-10">EP 10</button>
+            <button onclick="_filterEP('11')" class="filter-btn" id="f-11">EP 11</button>
+        </div>
     </div>
 
     <div id="b-cont" class="max-w-2xl mx-auto flex flex-col gap-6"></div>
@@ -73,7 +107,7 @@
         const _db = firebase.database();
         
         let _bsData = [], _pnBs = JSON.parse(localStorage.getItem('tos_pinned_bosses') || '[]');
-        let _fbD = {}, _isE = false, _currG = "";
+        let _fbD = {}, _isE = false, _currG = "", _curEP = "all";
 
         const _webhooks = {
             "giltine": "https://discord.com/api/webhooks/1477926894476460164/3pVC1WZZuA1A4X8OIkiK7ofOMN4IzT1DsuMXzMrmvIyvR5sDoAYv_UNc-pZ08sSB2wHC",
@@ -85,6 +119,13 @@
             "vakarine": "https://discord.com/api/webhooks/1477931060334563411/H15Tam4P1hvslCkE2OuohyE17RXq-EzklueHJplwyzKbenDyS3LVO6olRA9vPbGVa69g",
             "saule": "https://discord.com/api/webhooks/1477927539602362378/r685hgfJFYvMqI6V3zEsrM_JcMnvO9mapUhFFln8RhF_EnO2j3-DzUyxK5I7myDVp0By"
         };
+
+        function _filterEP(ep) {
+            _curEP = ep;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`f-${ep}`).classList.add('active');
+            _rend();
+        }
 
         function _onSrvChg() {
             const srv = document.getElementById('_grp').value;
@@ -125,7 +166,9 @@
 
         function _rend() {
             const c = document.getElementById('b-cont');
-            c.innerHTML = _bsData.map(b => {
+            const filtered = _bsData.filter(b => _curEP === "all" || String(b.ep) === _curEP);
+            
+            c.innerHTML = filtered.map(b => {
                 const p = _pnBs.includes(`card-${b.id}`), l = _isE ? "" : "btn-locked";
                 const elKey = (b.element || "").toLowerCase();
                 const elConfig = {
@@ -143,6 +186,7 @@
                         <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800 shadow-lg">
                             <img src="${b.img}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
                         </div>
+                        <div class="absolute -bottom-2 right-0 bg-yellow-600 text-black text-[10px] font-black px-2 py-0.5 rounded-lg shadow-lg">EP ${b.ep || '??'}</div>
                         <button onclick="_pin('card-${b.id}')" class="absolute -top-2 -left-2 bg-gray-800 rounded-full p-1 border border-gray-700 z-10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${p?'text-yellow-400 fill-current':'text-gray-600'}" viewBox="0 0 24 24" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         </button>
@@ -151,10 +195,13 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-2xl font-bold text-white tracking-tight">${b.name}</h3>
-                                <div class="text-red-500 text-xs font-bold mt-1 flex items-center gap-1 uppercase tracking-tighter">
-                                    <span class="material-symbols-outlined text-[14px]">location_on</span> ${b.map}
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-yellow-500 text-xs font-bold uppercase tracking-widest">LV. ${b.lv || '???'}</span>
+                                    <span class="text-red-500 text-[10px] font-bold flex items-center gap-0.5 uppercase tracking-tighter">
+                                        <span class="material-symbols-outlined text-[12px]">location_on</span> ${b.map}
+                                    </span>
                                 </div>
-                                <div class="flex gap-1.5 mt-2">
+                                <div class="flex gap-1.5 mt-3">
                                     <div class="px-2 py-0.5 rounded border" style="border-color: ${elConfig.border}; background-color: ${elConfig.bg};">
                                         <span class="text-[10px] font-bold uppercase tracking-wider" style="color: ${elConfig.text};">${elConfig.label}</span>
                                     </div>
@@ -175,7 +222,7 @@
                         <div class="mt-5 grid grid-cols-1 gap-2">
                             <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold py-3 rounded-2xl transition-all active:scale-[0.98] ${l}">เพิ่งตาย (${b.respawn} นาที)</button>
                             <div class="flex gap-2">
-                                <input type="text" id="in-${b.id}" placeholder="ระบุเวลา (นาที.วินาที)" class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none focus:border-purple-500 ${l}">
+                                <input type="number" id="in-${b.id}" placeholder="ระบุนาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none focus:border-purple-500 ${l}">
                                 <button onclick="_mchk('${b.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-5 rounded-xl font-bold transition-all active:scale-[0.98] ${l}">เริ่มนับ</button>
                             </div>
                         </div>
@@ -207,24 +254,14 @@
                             stE.innerText = "COUNTING DOWN..."; stE.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
                             cdE.classList.remove('alive-glow');
                         } else {
-                            // ช่วงบอสเกิด (READY TO CALL)
                             tmE.innerText = "EVENT START! ⚔️"; tmE.className = "text-3xl text-event-orange font-bold";
                             stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-xs text-event-orange font-bold mt-1 uppercase";
                             cdE.classList.add('alive-glow');
-                            
-                            // 1. ระบบแจ้งเตือน Webhook
                             if (t.notified === false && _isE) {
                                 _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
-                                const evT = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                _post(b.id, "ALIVE", evT);
-                            }
-
-                            // 2. ระบบ AUTO-RESET (ถ้าผ่านไป 15 นาทีแล้วไม่มีคนอัปเดต)
-                            // 15 นาที = 15 * 60 * 1000 = 900,000 ms
-                            const idleTime = n - t.expireTime;
-                            if (idleTime > 900000 && _isE) {
-                                console.log(`Auto Reset: ${b.name}`);
-                                _db.ref(`groups/${_currG}/timers/${b.id}`).remove();
+                                // ใช้เวลาไทยในการแสดงผล
+                                const thTime = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                _post(b.id, "ALIVE", thTime);
                             }
                         }
                     } else if (tmE) {
@@ -236,29 +273,16 @@
             }, 1000);
         }
 
-        function _mchk(id) {
-            const v = document.getElementById(`in-${id}`).value;
-            if (v) {
-                let totalMs = 0;
-                if (v.includes('.')) {
-                    const parts = v.split('.');
-                    const mins = parseInt(parts[0] || 0);
-                    const secs = parseInt(parts[1] || 0);
-                    totalMs = (mins * 60 * 1000) + (secs * 1000);
-                } else {
-                    totalMs = parseFloat(v) * 60 * 1000;
-                }
-                const n = localStorage.getItem('tos_uret_name');
-                _db.ref(`groups/${_currG}/timers/${id}`).set({ expireTime: Date.now() + totalMs, user: n, time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }), notified: false });
-                document.getElementById(`in-${id}`).value = '';
-            }
-        }
-
         function _chk(id, m) {
             if (!_isE) return;
             const t = _fbD[id]; if (t && t.expireTime > Date.now() && !confirm(`⚠️ นับใหม่ทับข้อมูลเดิม?`)) return;
             const n = localStorage.getItem('tos_uret_name');
-            _db.ref(`groups/${_currG}/timers/${id}`).set({ expireTime: Date.now() + (m * 60 * 1000), user: n, time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }), notified: false });
+            const nowTH = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+            _db.ref(`groups/${_currG}/timers/${id}`).set({ expireTime: Date.now() + (m * 60 * 1000), user: n, time: nowTH, notified: false });
+        }
+
+        function _mchk(id) {
+            const v = document.getElementById(`in-${id}`).value; if (v) { _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value = ''; }
         }
 
         function _rst(id) { if (_isE && confirm("Reset บอสตัวนี้?")) { _post(id, "DELETE"); _db.ref(`groups/${_currG}/timers/${id}`).remove(); } }
@@ -300,15 +324,19 @@
             const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name');
             const rId = role_ids[g] || ""; 
             const mention = rId ? `<@&${rId}>` : `@${g}`;
+            
+            // ดึงเวลาปัจจุบันประเทศไทย
+            const now = evT || new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
             let c = "";
             if (ty === "ALIVE") {
                 c = `**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n` +
+                    `⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n` +
                     `📍 สถานที่: **${b.map}**\n` +
-                    `⏰ เวลาปัจจุบัน: **${evT}**\n` +
+                    `⏰ เวลาปัจจุบัน (TH): **${now}**\n` +
                     `รีบไปตีมอนเปิดสเตจด่วน! ${mention}`; 
             } else {
-                c = `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]**`;
+                c = `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** (Lv. ${b.lv} | EP ${b.ep})`;
             }
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }

@@ -2,6 +2,8 @@
   {
     "id": "cowardly_red_bube_warrior",
     "name": "Cowardly Red Bube Warrior",
+    "lv": 7,
+    "ep": 1,
     "respawn": 150,
     "map": "Siauliai Miners Village",
     "element": "Fire",
@@ -11,6 +13,8 @@
   {
     "id": "strong_spector_lord",
     "name": "Strong Spector Lord",
+    "lv": 10,
+    "ep": 1,
     "respawn": 120,
     "map": "Crystal Mine",
     "element": "Earth",
@@ -20,6 +24,8 @@
   {
     "id": "strong_throneweaver",
     "name": "Strong Throneweaver",
+    "lv": 13,
+    "ep": 2,
     "respawn": 100,
     "map": "Nefritas Cliff",
     "element": "Earth",
@@ -29,6 +35,8 @@
   {
     "id": "strong_nepenthes",
     "name": "Strong Nepenthes",
+    "lv": 14,
+    "ep": 2,
     "respawn": 100,
     "map": "Tenet Garden",
     "element": "Earth",
@@ -38,6 +46,8 @@
   {
     "id": "cowardly_cyclops",
     "name": "Cowardly Cyclops",
+    "lv": 16,
+    "ep": 2,
     "respawn": 120,
     "map": "Tenet Church B1F",
     "element": "Dark",
@@ -47,6 +57,8 @@
   {
     "id": "strong_malletwyvern",
     "name": "Strong Malletwyvern",
+    "lv": 18,
+    "ep": 2,
     "respawn": 100,
     "map": "Tenet Church 1F",
     "element": "Dark",
@@ -56,6 +68,8 @@
   {
     "id": "strong_necrovanter",
     "name": "Strong Necrovanter",
+    "lv": 20,
+    "ep": 2,
     "respawn": 130,
     "map": "Tenet Church 2F",
     "element": "Dark",
@@ -65,6 +79,8 @@
   {
     "id": "strong_iltiswort",
     "name": "Strong Iltiswort",
+    "lv": 23,
+    "ep": 3,
     "respawn": 120,
     "map": "Dadan Jungle",
     "element": "Earth",
@@ -74,6 +90,8 @@
   {
     "id": "cowardly_mummygust",
     "name": "Cowardly Mummygust",
+    "lv": 25,
+    "ep": 3,
     "respawn": 120,
     "map": "Novaha Assembly Hall",
     "element": "Ice",
@@ -83,6 +101,8 @@
   {
     "id": "strong_velniamonkey",
     "name": "Strong Velniamonkey",
+    "lv": 27,
+    "ep": 3,
     "respawn": 240,
     "map": "Novaha Annex",
     "element": "Light",
@@ -92,6 +112,8 @@
   {
     "id": "indignant_deathweaver",
     "name": "Indignant Deathweaver",
+    "lv": 29,
+    "ep": 3,
     "respawn": 120,
     "map": "Novaha Institute",
     "element": "Dark",
@@ -101,6 +123,8 @@
   {
     "id": "cowardly_clymen",
     "name": "Cowardly Clymen",
+    "lv": 33,
+    "ep": 4,
     "respawn": 120,
     "map": "Cobalt Forest",
     "element": "Fire",
@@ -110,6 +134,8 @@
   {
     "id": "strong_mothtem",
     "name": "Strong Mothtem",
+    "lv": 35,
+    "ep": 4,
     "respawn": 120,
     "map": "Septyni Glen",
     "element": "Lightning",
@@ -119,6 +145,8 @@
   {
     "id": "strong_tutu",
     "name": "Strong Tutu",
+    "lv": 37,
+    "ep": 4,
     "respawn": 120,
     "map": "Pelke Shrine Ruins",
     "element": "Ice",
@@ -128,6 +156,8 @@
   {
     "id": "indignant_hydra",
     "name": "Indignant Hydra",
+    "lv": 39,
+    "ep": 4,
     "respawn": 120,
     "map": "Absenta Reservoir",
     "element": "Ice",
@@ -137,6 +167,8 @@
   {
     "id": "cowardly_reaverpede",
     "name": "Cowardly Reaverpede",
+    "lv": 45,
+    "ep": 5,
     "respawn": 120,
     "map": "Delmore Hamlet",
     "element": "Earth",
@@ -146,6 +178,8 @@
   {
     "id": "strong_grinender",
     "name": "Strong Grinender",
+    "lv": 47,
+    "ep": 5,
     "respawn": 120,
     "map": "Delmore Manor",
     "element": "Fire",
@@ -155,6 +189,8 @@
   {
     "id": "indignant_red_rambandgad",
     "name": "Indignant Red Rambandgad",
+    "lv": 49,
+    "ep": 5,
     "respawn": 120,
     "map": "Delmore Outskirts",
     "element": "Dark",
@@ -164,6 +200,8 @@
   {
     "id": "strong_taumas",
     "name": "Strong Taumas",
+    "lv": 53,
+    "ep": 6,
     "respawn": 120,
     "map": "Uskis Arable Land",
     "element": "Earth",
@@ -173,6 +211,8 @@
   {
     "id": "cowardly_manticen",
     "name": "Cowardly Manticen",
+    "lv": 54,
+    "ep": 6,
     "respawn": 120,
     "map": "Spring Light Woods",
     "element": "Lightning",
@@ -182,6 +222,8 @@
   {
     "id": "strong_chafer",
     "name": "Strong Chafer",
+    "lv": 56,
+    "ep": 6,
     "respawn": 120,
     "map": "Gate Route",
     "element": "Fire",
@@ -191,6 +233,8 @@
   {
     "id": "strong_archon",
     "name": "Strong Archon",
+    "lv": 58,
+    "ep": 6,
     "respawn": 120,
     "map": "Sirdgela Forest",
     "element": "Dark",
@@ -200,6 +244,8 @@
   {
     "id": "indignant_bramble",
     "name": "Indignant Bramble",
+    "lv": 60,
+    "ep": 6,
     "respawn": 120,
     "map": "Kvailas Forest",
     "element": "Earth",
@@ -209,6 +255,8 @@
   {
     "id": "cowardly_vearkaras",
     "name": "Cowardly Vearkaras",
+    "lv": 63,
+    "ep": 7,
     "respawn": 120,
     "map": "Zachariel Crossroads",
     "element": "Dark",
@@ -218,6 +266,8 @@
   {
     "id": "strong_thumlord",
     "name": "Strong Thumlord",
+    "lv": 65,
+    "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 1F",
     "element": "Dark",
@@ -227,6 +277,8 @@
   {
     "id": "strong_gorkas",
     "name": "Strong Gorkas",
+    "lv": 67,
+    "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 2F",
     "element": "Dark",
@@ -236,6 +288,8 @@
   {
     "id": "angry_rexipher",
     "name": "Angry Rexipher",
+    "lv": 69,
+    "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 3F",
     "element": "Dark",
@@ -245,6 +299,8 @@
   {
     "id": "cowardly_scorpio",
     "name": "Cowardly Scorpio",
+    "lv": 70,
+    "ep": 8,
     "respawn": 120,
     "map": "Baron Allerno",
     "element": "Dark",
@@ -254,6 +310,8 @@
   {
     "id": "strong_corrupted",
     "name": "Strong Corrupted",
+    "lv": 71,
+    "ep": 8,
     "respawn": 120,
     "map": "Aqueduct Bridge Area",
     "element": "Dark",
@@ -263,6 +321,8 @@
   {
     "id": "strong_blood",
     "name": "Strong Blood",
+    "lv": 72,
+    "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 1",
     "element": "Dark",
@@ -272,6 +332,8 @@
   {
     "id": "cowardly_nuaele",
     "name": "Cowardly Nuaele",
+    "lv": 73,
+    "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 3",
     "element": "Dark",
@@ -281,15 +343,19 @@
   {
     "id": "strong_dionysus",
     "name": "Strong Dionysus",
+    "lv": 74,
+    "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 4",
     "element": "Dark",
     "race": "Devil",
-    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_netherbovine.png"
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_dionys.png"
   },
   {
     "id": "angry_demon_lord_hauberk",
     "name": "Angry Demon Lord Hauberk",
+    "lv": 75,
+    "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 5",
     "element": "Dark",
@@ -299,6 +365,8 @@
   {
     "id": "strong_chapparition",
     "name": "Strong Chapparition",
+    "lv": 0,
+    "ep": 9,
     "respawn": 120,
     "map": "Goddess Ancient Garden",
     "element": "Dark",
@@ -308,6 +376,8 @@
   {
     "id": "cowardly_devilglove",
     "name": "Cowardly Devilglove",
+    "lv": 0,
+    "ep": 9,
     "respawn": 120,
     "map": "Fedimian Suburbs",
     "element": "Dark",
@@ -317,6 +387,8 @@
   {
     "id": "strong_salamander",
     "name": "Strong Salamander",
+    "lv": 0,
+    "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 1F",
     "element": "Fire",
@@ -326,6 +398,8 @@
   {
     "id": "strong_mineloader",
     "name": "Strong Mineloader",
+    "lv": 0,
+    "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 2F",
     "element": "Lightning",
@@ -335,6 +409,8 @@
   {
     "id": "indignant_helga_sircle",
     "name": "Indignant Helga Sircle",
+    "lv": 0,
+    "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 3F",
     "element": "Dark",
@@ -344,6 +420,8 @@
   {
     "id": "cowardly_glackuman",
     "name": "Cowardly Glackuman",
+    "lv": 0,
+    "ep": 10,
     "respawn": 120,
     "map": "Penitence Route",
     "element": "Dark",
@@ -353,6 +431,8 @@
   {
     "id": "strong_fireload",
     "name": "Strong Fireload",
+    "lv": 0,
+    "ep": 10,
     "respawn": 120,
     "map": "Main Building",
     "element": "Fire",
@@ -362,6 +442,8 @@
   {
     "id": "strong_rtiteris",
     "name": "Strong Riteris",
+    "lv": 0,
+    "ep": 10,
     "respawn": 120,
     "map": "Grand Corridor",
     "element": "Dark",
@@ -371,6 +453,8 @@
   {
     "id": "indignant_naktis",
     "name": "Indignant Naktis",
+    "lv": 0,
+    "ep": 10,
     "respawn": 120,
     "map": "Sanctuary",
     "element": "Dark",
@@ -380,6 +464,8 @@
   {
     "id": "cowardly_gaigalas",
     "name": "Cowardly Gaigalas",
+    "lv": 0,
+    "ep": 11,
     "respawn": 120,
     "map": "Laukyme Swamp",
     "element": "Fire",
@@ -389,6 +475,8 @@
   {
     "id": "strong_teraox",
     "name": "Strong Teraox",
+    "lv": 0,
+    "ep": 11,
     "respawn": 120,
     "map": "Tyla Monastery",
     "element": "Earth",
@@ -398,6 +486,8 @@
   {
     "id": "strong_ferretmarauder",
     "name": "Strong Ferretmarauder",
+    "lv": 0,
+    "ep": 11,
     "respawn": 120,
     "map": "Bellai Rainforest",
     "element": "Earth",
@@ -407,6 +497,8 @@
   {
     "id": "strong_kirmeleech",
     "name": "Strong Kirmeleech",
+    "lv": 0,
+    "ep": 11,
     "respawn": 120,
     "map": "Zeraha",
     "element": "Dark",
@@ -416,6 +508,8 @@
   {
     "id": "indignant_zaura",
     "name": "Indignant Zaura",
+    "lv": 0,
+    "ep": 11,
     "respawn": 120,
     "map": "Seir Rainforest",
     "element": "Dark",
