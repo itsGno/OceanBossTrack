@@ -18,26 +18,17 @@
         .btn-locked { opacity: 0.15; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
         .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
         .text-event-orange { color: #f97316 !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
-        
-        .filter-btn { 
-            border: 1px solid #334155; 
-            padding: 0.4rem 0.8rem; 
-            border-radius: 12px; 
-            font-size: 0.75rem; 
-            font-weight: bold; 
-            transition: all 0.2s; 
-            background: #1e293b;
-            color: #94a3b8;
-            white-space: nowrap;
-        }
-        .filter-btn.active { 
-            background-color: #f59e0b !important; 
-            color: #000 !important; 
-            border-color: #f59e0b !important; 
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); 
-        }
-        
+        .filter-btn { border: 1px solid #334155; padding: 0.4rem 0.8rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold; transition: all 0.2s; background: #1e293b; color: #94a3b8; white-space: nowrap; position: relative; }
+        .filter-btn.active { background-color: #f59e0b !important; color: #000 !important; border-color: #f59e0b !important; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        .ep-badge { position: absolute; top: -8px; right: -8px; background: #f97316; color: white; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 2px solid #0b101a; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .hidden { display: none !important; }
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem; }
+        
+        /* สไตล์ตาราง Log */
+        .log-container { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-radius: 1.5rem; overflow: hidden; }
+        .log-table th { background: #0f172a; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.75rem; }
+        .log-table td { padding: 0.75rem; border-bottom: 1px solid #1e293b; font-size: 0.8rem; }
+        .log-table tr:last-child td { border-bottom: none; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -84,22 +75,37 @@
         </div>
 
         <div class="flex flex-wrap gap-2 justify-start py-2" id="ep-filters">
-            <button onclick="_filterEP('all')" class="filter-btn active" id="f-all">All EP</button>
-            <button onclick="_filterEP('1')" class="filter-btn" id="f-1">EP 1</button>
-            <button onclick="_filterEP('2')" class="filter-btn" id="f-2">EP 2</button>
-            <button onclick="_filterEP('3')" class="filter-btn" id="f-3">EP 3</button>
-            <button onclick="_filterEP('4')" class="filter-btn" id="f-4">EP 4</button>
-            <button onclick="_filterEP('5')" class="filter-btn" id="f-5">EP 5</button>
-            <button onclick="_filterEP('6')" class="filter-btn" id="f-6">EP 6</button>
-            <button onclick="_filterEP('7')" class="filter-btn" id="f-7">EP 7</button>
-            <button onclick="_filterEP('8')" class="filter-btn" id="f-8">EP 8</button>
-            <button onclick="_filterEP('9')" class="filter-btn" id="f-9">EP 9</button>
-            <button onclick="_filterEP('10')" class="filter-btn" id="f-10">EP 10</button>
-            <button onclick="_filterEP('11')" class="filter-btn" id="f-11">EP 11</button>
+            <button onclick="_filterEP('all')" class="filter-btn active" id="f-all">All EP <span id="badge-all" class="ep-badge hidden">0</span></button>
+            <script>
+                for(let i=1; i<=11; i++){
+                    document.write(`<button onclick="_filterEP('${i}')" class="filter-btn" id="f-${i}">EP ${i} <span id="badge-${i}" class="ep-badge hidden">0</span></button>`);
+                }
+            </script>
         </div>
     </div>
 
-    <div id="b-cont" class="max-w-2xl mx-auto flex flex-col gap-6"></div>
+    <div id="b-cont" class="max-w-2xl mx-auto flex flex-col gap-6 mb-10"></div>
+
+    <div class="max-w-2xl mx-auto mb-20">
+        <h2 class="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">history</span> Recent Records (10)
+        </h2>
+        <div class="log-container">
+            <table class="w-full text-left log-table">
+                <thead>
+                    <tr>
+                        <th>Boss Name</th>
+                        <th>EP</th>
+                        <th>By</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="log-body">
+                    <tr><td colspan="4" class="text-center text-gray-600 py-10">Loading records...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
         const _0x1f2a = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebasedatabase.app/" };
@@ -166,8 +172,6 @@
 
         function _rend() {
             const c = document.getElementById('b-cont');
-            
-            // ปรับ logic: แสดงบอสที่ (ตรงกับ EP ที่เลือก) "หรือ" (เป็นบอสที่ปักหมุดไว้)
             const filtered = _bsData.filter(b => {
                 const isPinned = _pnBs.includes(`card-${b.id}`);
                 const matchesEP = (_curEP === "all" || String(b.ep) === _curEP);
@@ -176,17 +180,6 @@
             
             c.innerHTML = filtered.map(b => {
                 const p = _pnBs.includes(`card-${b.id}`), l = _isE ? "" : "btn-locked";
-                const elKey = (b.element || "").toLowerCase();
-                const elConfig = {
-                    'fire': { border: '#ff4d4d', text: '#ff9999', bg: 'rgba(255, 0, 0, 0.15)', label: 'ไฟ' },
-                    'earth': { border: '#b35900', text: '#ffb366', bg: 'rgba(139, 69, 19, 0.2)', label: 'ดิน' },
-                    'ice': { border: '#3399ff', text: '#99ccff', bg: 'rgba(0, 255, 255, 0.15)', label: 'น้ำแข็ง' },
-                    'lightning': { border: '#00e6e6', text: '#80ffff', bg: 'rgba(0, 255, 255, 0.15)', label: 'สายฟ้า' },
-                    'light': { border: '#ffd700', text: '#fff2a3', bg: 'rgba(255, 215, 0, 0.15)', label: 'แสงศักดิ์สิทธิ์' },
-                    'dark': { border: '#bf00ff', text: '#e699ff', bg: 'rgba(148, 0, 211, 0.2)', label: 'ความมืด' }
-                }[elKey] || { border: '#9ca3af', text: '#f3f4f6', bg: 'rgba(156, 163, 175, 0.1)', label: b.element };
-                const raceStyle = { border: '#5c2a1a', text: '#d2b48c', bg: 'rgba(92, 42, 26, 0.1)' };
-
                 return `<div class="boss-card bg-gray-900 p-6 flex flex-col md:flex-row gap-6 ${p?'pinned':''}" id="card-${b.id}">
                     <div class="relative w-full md:w-36 h-36 flex-shrink-0 mx-auto">
                         <div class="w-full h-full rounded-2xl overflow-hidden border border-gray-800 shadow-lg">
@@ -206,14 +199,6 @@
                                     <span class="text-red-500 text-[10px] font-bold flex items-center gap-0.5 uppercase tracking-tighter">
                                         <span class="material-symbols-outlined text-[12px]">location_on</span> ${b.map}
                                     </span>
-                                </div>
-                                <div class="flex gap-1.5 mt-3">
-                                    <div class="px-2 py-0.5 rounded border" style="border-color: ${elConfig.border}; background-color: ${elConfig.bg};">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider" style="color: ${elConfig.text};">${elConfig.label}</span>
-                                    </div>
-                                    <div class="px-2 py-0.5 rounded border" style="border-color: ${raceStyle.border}; background-color: ${raceStyle.bg};">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider" style="color: ${raceStyle.text};">${b.race}</span>
-                                    </div>
                                 </div>
                                 <div id="log-${b.id}" class="text-[11px] text-gray-500 mt-3 italic">No Record Data</div>
                             </div>
@@ -242,37 +227,85 @@
                 _fbD = s.val() || {};
                 document.getElementById('c-status').innerText = `● Connected Server: ${g}`;
                 document.getElementById('c-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
+                _updLog(); // อัปเดตตาราง log เมื่อข้อมูลเปลี่ยน
             });
+        }
+
+        // ฟังก์ชันอัปเดตตาราง Log ด้านล่าง
+        function _updLog() {
+            const body = document.getElementById('log-body');
+            const sorted = Object.entries(_fbD)
+                .map(([id, data]) => ({ id, ...data }))
+                .sort((a, b) => b.expireTime - a.expireTime) // เรียงตามเวลาใหม่สุด
+                .slice(0, 10); // เอาแค่ 10 อันแรก
+
+            if (sorted.length === 0) {
+                body.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-6">No records found.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = sorted.map(item => {
+                const b = _bsData.find(x => x.id === item.id);
+                if (!b) return '';
+                return `<tr>
+                    <td class="font-bold text-white">${b.name}</td>
+                    <td><span class="bg-gray-700 px-2 py-0.5 rounded text-[10px]">EP ${b.ep}</span></td>
+                    <td class="text-blue-400 font-bold">${item.user || 'System'}</td>
+                    <td class="text-gray-400 font-mono text-[10px]">${item.time || '-'}</td>
+                </tr>`;
+            }).join('');
         }
 
         function _loop() {
             setInterval(() => {
                 const n = Date.now();
+                const epCounts = { all: 0 };
+                for(let i=1; i<=11; i++) epCounts[i] = 0;
+
                 _bsData.forEach(b => {
                     const t = _fbD[b.id], tmE = document.getElementById(`tmr-${b.id}`), stE = document.getElementById(`st-${b.id}`), cdE = document.getElementById(`card-${b.id}`), lgE = document.getElementById(`log-${b.id}`);
-                    if (t && tmE) {
-                        lgE.innerText = `By: ${t.user} (${t.time})`;
+                    
+                    if (t) {
                         const r = Math.floor((t.expireTime - n) / 1000);
-                        if (r > 0) {
-                            let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
-                            tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                            tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
-                            stE.innerText = "COUNTING DOWN..."; stE.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
-                            cdE.classList.remove('alive-glow');
-                        } else {
-                            tmE.innerText = "EVENT START! ⚔️"; tmE.className = "text-3xl text-event-orange font-bold";
-                            stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-xs text-event-orange font-bold mt-1 uppercase";
-                            cdE.classList.add('alive-glow');
-                            if (t.notified === false && _isE) {
-                                _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
-                                const thTime = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                                _post(b.id, "ALIVE", thTime);
+                        const isAlive = (r <= 0);
+
+                        if (isAlive) {
+                            epCounts.all++;
+                            if (b.ep) epCounts[b.ep]++;
+                            if (r < -900) { _db.ref(`groups/${_currG}/timers/${b.id}`).remove(); return; }
+                        }
+
+                        if (tmE) {
+                            lgE.innerText = `By: ${t.user || 'No Data'} (${t.time || '-'})`;
+                            if (!isAlive) {
+                                let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
+                                tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                                tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
+                                stE.innerText = "COUNTING DOWN..."; stE.className = "text-xs text-gray-500 font-bold mt-1 uppercase";
+                                cdE.classList.remove('alive-glow');
+                            } else {
+                                tmE.innerText = "EVENT START! ⚔️"; tmE.className = "text-3xl text-event-orange font-bold";
+                                stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-xs text-event-orange font-bold mt-1 uppercase";
+                                cdE.classList.add('alive-glow');
+                                if (t.notified === false && _isE) {
+                                    _db.ref(`groups/${_currG}/timers/${b.id}`).update({ notified: true });
+                                    _post(b.id, "ALIVE");
+                                }
                             }
                         }
                     } else if (tmE) {
                         tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono uppercase";
                         stE.innerText = "Ready to Hunt"; stE.className = "text-xs text-green-500 font-bold mt-1 uppercase";
                         cdE.classList.remove('alive-glow'); lgE.innerText = "No Data";
+                    }
+                });
+
+                Object.keys(epCounts).forEach(key => {
+                    const badge = document.getElementById(`badge-${key}`);
+                    if (badge) {
+                        const count = epCounts[key];
+                        badge.innerText = count;
+                        if (count > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
                     }
                 });
             }, 1000);
@@ -285,18 +318,14 @@
             const nowTH = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
             _db.ref(`groups/${_currG}/timers/${id}`).set({ expireTime: Date.now() + (m * 60 * 1000), user: n, time: nowTH, notified: false });
         }
-
         function _mchk(id) {
             const v = document.getElementById(`in-${id}`).value; if (v) { _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value = ''; }
         }
-
         function _rst(id) { if (_isE && confirm("Reset บอสตัวนี้?")) { _post(id, "DELETE"); _db.ref(`groups/${_currG}/timers/${id}`).remove(); } }
-        
         function _pin(id) {
             const i = _pnBs.indexOf(id); if (i > -1) _pnBs.splice(i, 1); else _pnBs.push(id);
             localStorage.setItem('tos_pinned_bosses', JSON.stringify(_pnBs)); _rend();
         }
-
         function _save() {
             const g = document.getElementById('_grp').value, n = document.getElementById('_usr').value.trim(), w = document.getElementById('_whk').value;
             if (g && n) {
@@ -307,40 +336,17 @@
                 location.reload();
             }
         }
-
         function _logout() { if(confirm("ยกเลิกการล็อค Profile?")) { localStorage.setItem('tos_locked', 'false'); location.reload(); } }
-
         async function _post(id, ty, evT = "") {
             const w = localStorage.getItem('tos_discord_webhook');
             const g = localStorage.getItem('tos_group_name');
             if (!w || !w.startsWith('https://')) return;
-
-            const role_ids = {
-                "giltine": "1477963807245602837",
-                "austeja": "1477969803967725648",
-                "saule": "1477969920456265748",
-                "zemyna": "1477970066338349227",
-                "laima": "1477970107350122557",
-                "vaivora": "1477970160492089481",
-                "ausirine": "1477970230734098432",
-                "vakarine": "1477970281862664242"
-            };
-
+            const role_ids = { "giltine": "1477963807245602837", "austeja": "1477969803967725648", "saule": "1477969920456265748", "zemyna": "1477970066338349227", "laima": "1477970107350122557", "vaivora": "1477970160492089481", "ausirine": "1477970230734098432", "vakarine": "1477970281862664242" };
             const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name');
             const rId = role_ids[g] || ""; 
             const mention = rId ? `<@&${rId}>` : `@${g}`;
             const now = evT || new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-            let c = "";
-            if (ty === "ALIVE") {
-                c = `**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n` +
-                    `⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n` +
-                    `📍 สถานที่: **${b.map}**\n` +
-                    `⏰ เวลาปัจจุบัน (TH): **${now}**\n` +
-                    `รีบไปตีมอนเปิดสเตจด่วน! ${mention}`; 
-            } else {
-                c = `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** (Lv. ${b.lv} | EP ${b.ep})`;
-            }
+            let c = (ty === "ALIVE") ? `**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${b.map}**\n⏰ เวลาปัจจุบัน (TH): **${now}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}` : `🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** (Lv. ${b.lv} | EP ${b.ep})`;
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }
         _init();
