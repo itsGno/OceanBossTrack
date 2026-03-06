@@ -316,12 +316,26 @@
         }
         function _logout() { if(confirm("Logout Profile?")) { localStorage.clear(); location.reload(); } }
 
-        async function _post(id, ty, ch) {
-            const w = _webhooks[_currG]; if (!w) return;
-            const b = _bsData.find(x => x.id === id);
-            const prefix = (_currG === "test_server") ? "🧪 **[TEST]** " : "";
-            const content = `${prefix}**BOSS ALIVE!** [${b.name}] **(CH ${ch})** เกิดแล้วที่ [${b.map}] ⚔️`;
-            try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }); } catch (e) {}
+        async function _post(id, ty) {
+            const g = localStorage.getItem('tos_group_name');
+            const w = _webhooks[g]; 
+            if (!w) return;
+
+            const role_ids = { "giltine": "1477963807245602837", "austeja": "1477969803967725648", "saule": "1477969920456265748", "zemyna": "1477970066338349227", "laima": "1477970107350122557", "vaivora": "1477970160492089481", "ausirine": "1477970230734098432", "vakarine": "1477970281862664242" };
+            const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name');
+            const rId = role_ids[g] || ""; 
+            const mention = rId ? `<@&${rId}>` : `@${g}`;
+            const nowServer = Date.now() + _srvOfst;
+            const nowTH = new Date(nowServer).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // เพิ่ม Prefix [TEST] เฉพาะเวลาอยู่ใน Server ทดสอบ
+            let prefix = (g === "test_server") ? "🧪 **[TEST MESSAGE]** " : "";
+
+            let c = (ty === "ALIVE") 
+                ? `${prefix}**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${b.map}**\n⏰ เวลาปัจจุบัน (TH): **${nowTH}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}`
+                : `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** (Lv. ${b.lv} | EP ${b.ep})`;
+
+            try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }
         _init();
     </script>
