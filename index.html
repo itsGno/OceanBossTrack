@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>TOS-M Tracker V1.5.8 - Auto Refresh</title>
+    <title>TOS-M Tracker V1.5.9 - Smart Auto Switch</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -92,12 +92,11 @@
 
     <script>
         // --- 1. SYSTEM: AUTO FORCE RELOAD LOGIC ---
-        const APP_VERSION = "1.5.8"; 
+        const APP_VERSION = "1.5.9"; 
         (function checkVersion() {
             const savedVersion = localStorage.getItem('app_version');
             if (savedVersion !== APP_VERSION) {
                 localStorage.setItem('app_version', APP_VERSION);
-                // สั่งรีโหลดพร้อมเติม version เข้าไปใน URL เพื่อล้าง Cache ของเบราว์เซอร์
                 window.location.href = window.location.pathname + '?v=' + APP_VERSION;
             }
         })();
@@ -111,6 +110,7 @@
         let _fbD = {}, _fbLogs = {}, _isE = false, _currG = "", _curEP = "all", _srvOfst = 0;
         let _selectedCh = {};
         let _webhooks = {};
+        let _isManualCh = {}; // เก็บสถานะว่า User กดเลือก CH เองหรือไม่
 
         _db.ref('config/webhooks').once('value', s => { _webhooks = s.val() || {}; });
         _db.ref(".info/serverTimeOffset").on("value", (s) => { _srvOfst = s.val() || 0; });
@@ -136,13 +136,11 @@
                 }
             }
             try {
-                // บังคับดึงข้อมูล JSON ใหม่เสมอด้วย Date.now()
                 const r = await fetch('bosses.json?v=' + Date.now());
                 _bsData = await r.json();
                 const sG = localStorage.getItem('tos_group_name'), sN = localStorage.getItem('tos_uret_name'), isL = localStorage.getItem('tos_locked') === 'true';
                 if (isL && sG) { 
-                    _currG = sG; 
-                    _isE = true; 
+                    _currG = sG; _isE = true; 
                     document.getElementById('input-fields').classList.add('hidden'); 
                     document.getElementById('locked-fields').classList.remove('hidden'); 
                     document.getElementById('display-usr').innerText = sN; 
@@ -170,8 +168,6 @@
                     'dark': { border: '#bf00ff', text: '#e699ff', bg: 'rgba(148, 0, 211, 0.2)', label: 'ความมืด' }
                 }[elKey] || { border: '#9ca3af', text: '#f3f4f6', bg: 'rgba(156, 163, 175, 0.1)', label: b.element };
 
-                const fullMapInfo = `${b.map}${b.map_ext ? ' (' + b.map_ext + ')' : ''}`;
-
                 return `<div class="boss-card p-6 flex flex-col md:flex-row gap-6 ${p?'pinned':''}" id="card-${b.id}">
                     <div class="relative w-full md:w-36 h-36 flex-shrink-0 mx-auto">
                         <img src="${b.img}" class="w-full h-full object-cover rounded-2xl border border-gray-800" onerror="this.src='https://via.placeholder.com/150'">
@@ -184,7 +180,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-2xl font-bold text-white leading-tight">${b.name} <span class="text-xl text-yellow-400 font-black ml-1">LV.${b.lv}</span></h3>
-                                <div class="text-[10px] text-red-500 font-bold mt-1 uppercase">📍 ${fullMapInfo}</div>
+                                <div class="text-[10px] text-red-500 font-bold mt-1 uppercase">📍 ${b.map}${b.map_ext ? ' (' + b.map_ext + ')' : ''}</div>
                                 <div class="flex gap-1.5 mt-2">
                                     <div class="px-2 py-0.5 rounded border" style="border-color: ${elConfig.border}; background-color: ${elConfig.bg};">
                                         <span class="text-[9px] font-bold uppercase tracking-wider" style="color: ${elConfig.text};">${elConfig.label}</span>
@@ -223,6 +219,7 @@
         }
 
         function _setCh(id, ch) {
+            _isManualCh[id] = true; // เมื่อกดเอง จะหยุด Auto-Switch จนกว่าจะรีโหลดหน้าใหม่
             _selectedCh[id] = ch;
             [1, 2, 3].forEach(i => {
                 const btn = document.getElementById(`btn-ch-${id}-${i}`);
@@ -246,23 +243,38 @@
 
         function _updT(id) {
             const now = Date.now() + _srvOfst;
-            const ch = _selectedCh[id] || 1;
-            const t = _fbD[`${id}_ch${ch}`];
+            let ch = _selectedCh[id] || 1;
             const tmE = document.getElementById(`tmr-${id}`), stE = document.getElementById(`st-${id}`), lgE = document.getElementById(`log-${id}`);
             
+            if (!tmE) return;
+            let aliveCh = null;
+
+            // 1. ตรวจสอบสถานะทุก CH
             [1,2,3].forEach(cNum => {
                 const dot = document.getElementById(`dot-${id}-${cNum}`);
-                if(dot) {
-                    const ct = _fbD[`${id}_ch${cNum}`];
-                    if(ct) {
-                        const rSec = (ct.expireTime - now) / 1000;
-                        dot.className = (rSec <= 0) ? "status-dot alive" : "status-dot counting";
-                        if (rSec < -1200 && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); }
-                    } else { dot.className = "status-dot"; }
-                }
+                const ct = _fbD[`${id}_ch${cNum}`];
+                if(ct && ct.expireTime) {
+                    const rSec = (ct.expireTime - now) / 1000;
+                    const isAlive = rSec <= 0;
+                    if(dot) dot.className = isAlive ? "status-dot alive" : "status-dot counting";
+                    if (isAlive) aliveCh = cNum; // เก็บ CH ที่เกิดล่าสุดไว้
+                    if (rSec < -1200 && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); }
+                } else { if(dot) dot.className = "status-dot"; }
             });
 
-            if (t && tmE) {
+            // 2. AUTO-SWITCH: ถ้ามีบอสเกิด และผู้ใช้ยังไม่ได้เลือก CH เอง ให้เด้งไป CH นั้น
+            if (aliveCh && !_isManualCh[id] && ch !== aliveCh) {
+                _selectedCh[id] = aliveCh;
+                ch = aliveCh;
+                [1, 2, 3].forEach(i => {
+                    const btn = document.getElementById(`btn-ch-${id}-${i}`);
+                    if (btn) btn.classList.toggle('active', i === ch);
+                });
+            }
+
+            // 3. แสดงข้อมูล
+            const t = _fbD[`${id}_ch${ch}`];
+            if (t && t.expireTime) {
                 const r = Math.floor((t.expireTime - now) / 1000);
                 lgE.innerText = `CH ${ch}: By ${t.user} (${t.time})`;
                 if (r > 0) {
@@ -278,7 +290,7 @@
                         _post(id, "ALIVE", ch); 
                     }
                 }
-            } else if (tmE) {
+            } else {
                 tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono";
                 stE.innerText = `CH ${ch} - Ready to Hunt`; stE.className = "text-[10px] text-green-500 font-black mt-1 uppercase";
                 lgE.innerText = `CH ${ch}: No Data`;
@@ -343,10 +355,7 @@
             let g = document.getElementById('_grp').value, n = document.getElementById('_usr').value.trim();
             if (n === "/testadmin") { g = "test_server"; n = "Admin_Tester"; }
             if (g && n) { 
-                localStorage.setItem('tos_group_name', g); 
-                localStorage.setItem('tos_uret_name', n); 
-                localStorage.setItem('tos_locked', 'true'); 
-                // บังคับ Reload เพื่อเริ่มการเชื่อมต่อใหม่
+                localStorage.setItem('tos_group_name', g); localStorage.setItem('tos_uret_name', n); localStorage.setItem('tos_locked', 'true'); 
                 location.reload(); 
             }
         }
@@ -362,7 +371,7 @@
             const mapLoc = `${b.map}${b.map_ext ? ' (' + b.map_ext + ')' : ''}`;
             let prefix = (g === "test_server") ? "🧪 **[TEST MESSAGE]** " : "";
             let c = (ty === "ALIVE") 
-                 ? `───────────────────\n${prefix}**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${mapLoc} (CH ${ch})**\n⏰ เวลาปัจจุบัน (TH): **${nowTH}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}\n───────────────────\n`
+                  ? `───────────────────\n${prefix}**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${mapLoc} (CH ${ch})**\n⏰ เวลาปัจจุบัน (TH): **${nowTH}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}\n───────────────────\n`
                 : `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** ที่ **${mapLoc} (CH ${ch})** (Lv. ${b.lv} | EP ${b.ep})`;
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }
