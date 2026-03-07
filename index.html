@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TOS-M Tracker V1.4.2 - Auto-Clear Update</title>
+    <title>TOS-M Tracker V1.4.3 - Improved Status Dots</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -18,27 +18,45 @@
         .btn-locked { opacity: 0.15; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
         .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
         .text-event-orange { color: #f97316 !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
+        
         .filter-btn { border: 1px solid #334155; padding: 0.4rem 0.8rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold; transition: all 0.2s; background: #1e293b; color: #94a3b8; white-space: nowrap; position: relative; }
         .filter-btn.active { background-color: #f59e0b !important; color: #000 !important; border-color: #f59e0b !important; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-        .ep-badge { position: absolute; top: -8px; right: -8px; background: #f97316; color: white; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 2px solid #0b101a; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .ep-badge { position: absolute; top: -8px; right: -8px; background: #f97316; color: white; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 2px solid #0b101a; }
+
+        /* ปรับปรุงจุดแจ้งเตือนบนปุ่ม CH ให้ใหญ่ขึ้น */
+        .ch-btn { position: relative; border-radius: 10px; font-size: 11px; font-weight: bold; transition: all 0.2s; border: 1px solid #334155; color: #94a3b8; background: #1e293b; }
+        .ch-btn.active { background-color: #f59e0b; color: #000; border-color: #f59e0b; }
+        
+        .status-dot { 
+            position: absolute; 
+            top: -4px; 
+            right: -4px; 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            border: 2px solid #0b101a; 
+            display: none; 
+            z-index: 10;
+        }
+        .status-dot.counting { display: block; background: #3b82f6; box-shadow: 0 0 5px rgba(59, 130, 246, 0.8); }
+        .status-dot.alive { 
+            display: block; 
+            background: #f97316; 
+            animation: blink 0.8s infinite; 
+            box-shadow: 0 0 8px rgba(249, 115, 22, 1);
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+
         .log-container { background: rgba(30, 41, 59, 0.5); border: 1px solid #334155; border-radius: 1.5rem; overflow: hidden; }
-        .log-table th { background: #0f172a; color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.75rem; }
+        .log-table th { background: #0f172a; color: #94a3b8; font-size: 0.7rem; padding: 0.75rem; }
         .log-table td { padding: 0.75rem; border-bottom: 1px solid #1e293b; font-size: 0.8rem; }
-        .ch-indicator-wrap { position: absolute; top: -5px; right: -5px; display: flex; flex-direction: column; gap: 3px; z-index: 20; background: rgba(0,0,0,0.6); padding: 3px; border-radius: 8px; border: 1px solid #334155; backdrop-filter: blur(4px); }
-        .ch-dot { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; border: 1px solid #334155; color: #475569; transition: all 0.3s; cursor: pointer; }
-        .ch-dot.counting { background: #1e3a8a; color: #60a5fa; border-color: #3b82f6; }
-        .ch-dot.alive { background: #f97316; color: white; border-color: #fdba74; animation: blink-fast 1s infinite; box-shadow: 0 0 8px #f97316; }
-        @keyframes blink-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        .ch-btn { border-radius: 10px; font-size: 11px; font-weight: bold; transition: all 0.2s; border: 1px solid #334155; color: #94a3b8; }
-        .ch-btn.active { background-color: #f59e0b; color: #000; border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
-        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <header class="max-w-2xl mx-auto text-center mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.4.2</h1>
+        <h1 class="text-3xl font-bold text-white mb-2">🌳 TOS-M Tracker V1.4.3</h1>
         <div id="c-status" class="text-xs text-yellow-500 font-bold uppercase tracking-widest">Disconnected</div>
     </header>
 
@@ -48,16 +66,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div>
                         <label class="block text-xs text-yellow-500 font-bold mb-1 uppercase tracking-widest">Server</label>
-                        <select id="_grp" onchange="_vld()" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-yellow-500 cursor-pointer">
+                        <select id="_grp" onchange="_vld()" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                             <option value="" disabled selected>เลือกเซิร์ฟเวอร์...</option>
-                            <option value="giltine">giltine</option>
-                            <option value="austeja">austeja</option>
-                            <option value="zemyna">zemyna</option>
-                            <option value="laima">laima</option>
-                            <option value="vaivora">vaivora</option>
-                            <option value="ausirine">ausirine</option>
-                            <option value="vakarine">vakarine</option>
-                            <option value="saule">saule</option>
+                            <option value="giltine">giltine</option><option value="austeja">austeja</option><option value="zemyna">zemyna</option>
+                            <option value="laima">laima</option><option value="vaivora">vaivora</option><option value="ausirine">ausirine</option>
+                            <option value="vakarine">vakarine</option><option value="saule">saule</option>
                         </select>
                     </div>
                     <div>
@@ -65,7 +78,7 @@
                         <input type="text" id="_usr" oninput="_vld()" placeholder="Nickname" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                     </div>
                 </div>
-                <button id="_svB" onclick="_save()" class="w-full mt-1 bg-blue-600 hover:bg-blue-500 text-white text-xs py-3 rounded-xl font-bold btn-locked uppercase transition-all">Save & Connect Profile</button>
+                <button id="_svB" onclick="_save()" class="w-full mt-1 bg-blue-600 text-white text-xs py-3 rounded-xl font-bold btn-locked uppercase transition-all">Save & Connect Profile</button>
             </div>
 
             <div id="locked-fields" class="hidden flex justify-between items-center py-1">
@@ -90,12 +103,8 @@
         </h2>
         <div class="log-container">
             <table class="w-full text-left log-table">
-                <thead>
-                    <tr><th>Boss Name</th><th>CH</th><th>By</th><th>Time</th></tr>
-                </thead>
-                <tbody id="log-body">
-                    <tr><td colspan="4" class="text-center text-gray-600 py-10">Loading records...</td></tr>
-                </tbody>
+                <thead><tr><th>Boss Name</th><th>CH</th><th>By</th><th>Time</th></tr></thead>
+                <tbody id="log-body"><tr><td colspan="4" class="text-center text-gray-600 py-10">Loading records...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -129,20 +138,11 @@
         async function _init() {
             const filterCont = document.getElementById('ep-filters');
             for(let i=1; i<=11; i++) filterCont.innerHTML += `<button onclick="_filterEP('${i}')" class="filter-btn" id="f-${i}">EP ${i} <span id="badge-${i}" class="ep-badge hidden">0</span></button>`;
-
             try {
                 const r = await fetch('bosses.json?v=' + Date.now());
                 _bsData = await r.json();
                 const sG = localStorage.getItem('tos_group_name'), sN = localStorage.getItem('tos_uret_name'), isL = localStorage.getItem('tos_locked') === 'true';
-
-                if (isL && sG) {
-                    _currG = sG; _isE = true;
-                    document.getElementById('input-fields').classList.add('hidden');
-                    document.getElementById('locked-fields').classList.remove('hidden');
-                    document.getElementById('display-usr').innerText = sN;
-                    document.getElementById('display-grp').innerText = sG;
-                    _sync(sG);
-                } else if(sG) { document.getElementById('_grp').value = sG; }
+                if (isL && sG) { _currG = sG; _isE = true; document.getElementById('input-fields').classList.add('hidden'); document.getElementById('locked-fields').classList.remove('hidden'); document.getElementById('display-usr').innerText = sN; document.getElementById('display-grp').innerText = sG; _sync(sG); }
                 _rend(); _vld(); _loop();
             } catch (e) { console.warn(e); }
         }
@@ -166,11 +166,8 @@
 
                 return `<div class="boss-card bg-gray-900 p-6 flex flex-col md:flex-row gap-6 ${p?'pinned':''}" id="card-${b.id}">
                     <div class="relative w-full md:w-36 h-36 flex-shrink-0 mx-auto">
-                        <img src="${b.img}" class="w-full h-full object-cover rounded-2xl border border-gray-800 shadow-lg" onerror="this.src='https://via.placeholder.com/150'">
-                        <div class="absolute -bottom-2 right-0 bg-yellow-600 text-black text-[10px] font-black px-2 py-0.5 rounded-lg shadow-lg z-10">EP ${b.ep}</div>
-                        <div class="ch-indicator-wrap">
-                            ${[1,2,3].map(ch => `<div id="mon-${b.id}-${ch}" onclick="_setCh('${b.id}', ${ch})" class="ch-dot">C${ch}</div>`).join('')}
-                        </div>
+                        <img src="${b.img}" class="w-full h-full object-cover rounded-2xl border border-gray-800" onerror="this.src='https://via.placeholder.com/150'">
+                        <div class="absolute -bottom-2 right-0 bg-yellow-600 text-black text-[10px] font-black px-2 py-0.5 rounded-lg z-10">EP ${b.ep}</div>
                         <button onclick="_pin('card-${b.id}')" class="absolute -top-2 -left-2 bg-gray-800 rounded-full p-1 border border-gray-700 z-10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ${p?'text-yellow-400 fill-current':'text-gray-600'}" viewBox="0 0 24 24" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         </button>
@@ -178,9 +175,7 @@
                     <div class="flex-1">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h3 class="text-2xl font-bold text-white leading-tight">
-                                    ${b.name} <span class="text-xl text-yellow-400 font-black ml-1">LV.${b.lv}</span>
-                                </h3>
+                                <h3 class="text-2xl font-bold text-white leading-tight">${b.name} <span class="text-xl text-yellow-400 font-black ml-1">LV.${b.lv}</span></h3>
                                 <div class="text-[10px] text-red-500 font-bold mt-1 uppercase">📍 ${b.map}</div>
                                 <div class="flex gap-1.5 mt-2">
                                     <div class="px-2 py-0.5 rounded border" style="border-color: ${elConfig.border}; background-color: ${elConfig.bg};">
@@ -195,17 +190,21 @@
                             <button onclick="_rst('${b.id}')" class="text-gray-600 hover:text-red-500 ${l}"><span class="material-symbols-outlined">close</span></button>
                         </div>
                         <div class="mt-4 bg-black rounded-2xl py-3 px-2 text-center border border-gray-800 shadow-inner">
-                            <div id="tmr-${b.id}" class="text-4xl text-yellow-400 font-mono uppercase tracking-tighter">READY</div>
-                            <div id="st-${b.id}" class="text-[10px] text-green-500 font-black mt-1 uppercase tracking-widest">Ready to Hunt</div>
+                            <div id="tmr-${b.id}" class="text-4xl text-yellow-400 font-mono">READY</div>
+                            <div id="st-${b.id}" class="text-[10px] text-green-500 font-black mt-1 uppercase">Ready to Hunt</div>
                         </div>
                         <div class="mt-4">
                             <div class="flex gap-1 mb-2 justify-center">
-                                ${[1, 2, 3].map(ch => `<button id="btn-ch-${b.id}-${ch}" onclick="_setCh('${b.id}', ${ch})" class="ch-btn px-4 py-1 ${ch===curCh?'active':''} ${l}">CH ${ch}</button>`).join('')}
+                                ${[1, 2, 3].map(ch => `
+                                    <button id="btn-ch-${b.id}-${ch}" onclick="_setCh('${b.id}', ${ch})" class="ch-btn px-4 py-1 ${ch===curCh?'active':''} ${l}">
+                                        CH ${ch}
+                                        <span id="dot-${b.id}-${ch}" class="status-dot"></span>
+                                    </button>`).join('')}
                             </div>
                             <div class="grid grid-cols-1 gap-2">
-                                <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 py-3 rounded-2xl text-xs font-bold text-white shadow-lg active:scale-95 transition-all ${l}">เพิ่งตาย (${b.respawn} น.)</button>
+                                <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 py-3 rounded-2xl text-xs font-bold text-white shadow-lg ${l}">เพิ่งตาย (${b.respawn} น.)</button>
                                 <div class="flex gap-2">
-                                    <input type="number" id="in-${b.id}" placeholder="ระบุนาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center outline-none ${l}">
+                                    <input type="number" id="in-${b.id}" placeholder="ระบุนาที..." class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-xs text-white text-center ${l}">
                                     <button onclick="_mchk('${b.id}')" class="bg-purple-600 px-5 rounded-xl text-xs font-bold text-white ${l}">เริ่มนับ</button>
                                 </div>
                             </div>
@@ -219,7 +218,7 @@
             _selectedCh[id] = ch;
             [1, 2, 3].forEach(i => {
                 const btn = document.getElementById(`btn-ch-${id}-${i}`);
-                if (btn) btn.className = `ch-btn px-4 py-1 ${i===ch?'active':''}`;
+                if (btn) btn.classList.toggle('active', i === ch);
             });
             _updT(id);
         }
@@ -227,7 +226,7 @@
         function _sync(g) {
             _db.ref(`groups/${g}/timers`).on('value', s => { _fbD = s.val() || {}; });
             _db.ref(`groups/${g}/logs`).orderByChild('timestamp').limitToLast(10).on('value', s => { _fbLogs = s.val() || {}; _updLog(); });
-            document.getElementById('c-status').innerText = `● Connected Server: ${g}`;
+            document.getElementById('c-status').innerText = `● Connected: ${g}`;
             document.getElementById('c-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
         }
 
@@ -244,18 +243,14 @@
             const tmE = document.getElementById(`tmr-${id}`), stE = document.getElementById(`st-${id}`), cdE = document.getElementById(`card-${id}`), lgE = document.getElementById(`log-${id}`);
             
             [1,2,3].forEach(cNum => {
-                const mon = document.getElementById(`mon-${id}-${cNum}`);
-                if(mon) {
+                const dot = document.getElementById(`dot-${id}-${cNum}`);
+                if(dot) {
                     const ct = _fbD[`${id}_ch${cNum}`];
                     if(ct) {
                         const rSec = (ct.expireTime - now) / 1000;
-                        mon.className = (rSec <= 0) ? "ch-dot alive" : "ch-dot counting";
-                        
-                        // Auto-Reset Logic: If alive more than 15 minutes (900s)
-                        if (rSec < -900 && _isE) {
-                            _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove();
-                        }
-                    } else { mon.className = "ch-dot"; }
+                        dot.className = (rSec <= 0) ? "status-dot alive" : "status-dot counting";
+                        if (rSec < -900 && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); }
+                    } else { dot.className = "status-dot"; }
                 }
             });
 
@@ -307,7 +302,10 @@
         }
 
         function _mchk(id) { const v = document.getElementById(`in-${id}`).value; if(v){ _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value=''; } }
-        function _rst(id) { const ch = _selectedCh[id] || 1; if(_isE && confirm(`Reset CH ${ch} ของบอสตัวนี้?`)) { _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove(); } }
+        function _rst(id) { const ch = _selectedCh[id] || 1; if(_isE && confirm(`Reset CH ${ch} ของบอสตัวนี้?`)) { 
+            _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove(); 
+            _post(id, "RESET", ch);
+        } }
         function _pin(id) { const i = _pnBs.indexOf(id); i>-1 ? _pnBs.splice(i,1) : _pnBs.push(id); localStorage.setItem('tos_pinned_bosses', JSON.stringify(_pnBs)); _rend(); }
         function _save() {
             let g = document.getElementById('_grp').value, n = document.getElementById('_usr').value.trim();
@@ -316,25 +314,17 @@
         }
         function _logout() { if(confirm("Logout Profile?")) { localStorage.clear(); location.reload(); } }
 
-        async function _post(id, ty) {
+        async function _post(id, ty, ch) {
             const g = localStorage.getItem('tos_group_name');
-            const w = _webhooks[g]; 
-            if (!w) return;
-
+            const w = _webhooks[g]; if (!w) return;
             const role_ids = { "giltine": "1477963807245602837", "austeja": "1477969803967725648", "saule": "1477969920456265748", "zemyna": "1477970066338349227", "laima": "1477970107350122557", "vaivora": "1477970160492089481", "ausirine": "1477970230734098432", "vakarine": "1477970281862664242" };
-            const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name');
-            const rId = role_ids[g] || ""; 
+            const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name'), rId = role_ids[g] || ""; 
             const mention = rId ? `<@&${rId}>` : `@${g}`;
-            const nowServer = Date.now() + _srvOfst;
-            const nowTH = new Date(nowServer).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-            // เพิ่ม Prefix [TEST] เฉพาะเวลาอยู่ใน Server ทดสอบ
+            const nowServer = Date.now() + _srvOfst, nowTH = new Date(nowServer).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             let prefix = (g === "test_server") ? "🧪 **[TEST MESSAGE]** " : "";
-
             let c = (ty === "ALIVE") 
-                ? `${prefix}**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${b.map}**\n⏰ เวลาปัจจุบัน (TH): **${nowTH}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}`
-                : `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** (Lv. ${b.lv} | EP ${b.ep})`;
-
+                ? `${prefix}**EVENT START!** บอส **[${b.name}]** เข้าสู่ช่วงปลุกบอสแล้ว!\n⭐ Level: **${b.lv || '???'}** | 📂 Episode: **${b.ep || '??'}**\n📍 สถานที่: **${b.map} (CH ${ch})**\n⏰ เวลาปัจจุบัน (TH): **${nowTH}**\nรีบไปตีมอนเปิดสเตจด่วน! ${mention}`
+                : `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** ที่ **${b.map} (CH ${ch})** (Lv. ${b.lv} | EP ${b.ep})`;
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }
         _init();
