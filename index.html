@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>TOS-M Tracker V1.6.1 - Stable Edition</title>
+    <title>TOS-M Tracker V1.6.5 - Official Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -35,12 +35,8 @@
         .log-table th { background: #0f172a; color: #94a3b8; font-size: 0.7rem; padding: 0.75rem; }
         .log-table td { padding: 0.75rem; border-bottom: 1px solid #1e293b; font-size: 0.8rem; }
         .hidden { display: none !important; }
-
-        /* Hall of Fame Medal Design */
         .medal-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 1rem; transition: transform 0.2s; }
         .medal-gold { border-color: #fbbf24; background: linear-gradient(135deg, #2d240b 0%, #0f172a 100%); box-shadow: 0 0 15px rgba(251, 191, 36, 0.1); }
-        
-        /* Back to Top Design */
         #backToTop { transition: all 0.3s ease; transform: translateY(20px); opacity: 0; }
         #backToTop.show { opacity: 1; transform: translateY(0); }
     </style>
@@ -89,11 +85,9 @@
 
     <div class="max-w-2xl mx-auto mb-10">
         <h2 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">workspace_premium</span> Top Contributors (Medals)
+            <span class="material-symbols-outlined text-sm">workspace_premium</span> Top Contributors
         </h2>
-        <div id="hof-medal-list" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="col-span-full text-center py-4 text-gray-500 text-xs italic">กำลังประมวลผลอันดับ...</div>
-        </div>
+        <div id="hof-medal-list" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
     </div>
 
     <div class="max-w-2xl mx-auto mb-20">
@@ -113,22 +107,14 @@
     </button>
 
     <script>
-        const APP_VERSION = "1.6.1"; 
-        (function checkVersion() {
-            const savedVersion = localStorage.getItem('app_version');
-            if (savedVersion !== APP_VERSION) {
-                localStorage.setItem('app_version', APP_VERSION);
-                window.location.href = window.location.pathname + '?v=' + APP_VERSION;
-            }
-        })();
-
+        const APP_VERSION = "1.6.5"; 
         const _0x1f2a = { databaseURL: "https://tos-boss-tracker-default-rtdb.asia-southeast1.firebasedatabase.app/" };
         firebase.initializeApp(_0x1f2a);
         const _db = firebase.database();
         
         let _bsData = [], _pnBs = JSON.parse(localStorage.getItem('tos_pinned_bosses') || '[]');
         let _fbD = {}, _fbLogs = {}, _isE = false, _currG = "", _curEP = "all", _srvOfst = 0;
-        let _selectedCh = {};
+        let _selectedCh = {}, _hasAutoSwitched = {}; 
         let _webhooks = {};
 
         _db.ref('config/webhooks').once('value', s => { _webhooks = s.val() || {}; });
@@ -177,6 +163,7 @@
             c.innerHTML = filtered.map(b => {
                 const p = _pnBs.includes(`card-${b.id}`), l = _isE ? "" : "btn-locked";
                 const curCh = _selectedCh[b.id] || 1;
+                
                 const elKey = (b.element || "").toLowerCase();
                 const elConfig = {
                     'fire': { border: '#ff4d4d', text: '#ff9999', bg: 'rgba(255, 0, 0, 0.15)', label: 'ไฟ' },
@@ -218,11 +205,7 @@
                         </div>
                         <div class="mt-4">
                             <div class="flex gap-1 mb-2 justify-center">
-                                ${[1, 2, 3].map(ch => `
-                                    <button id="btn-ch-${b.id}-${ch}" onclick="_setCh('${b.id}', ${ch})" class="ch-btn px-4 py-1 ${ch===curCh?'active':''} ${l}">
-                                        CH ${ch}
-                                        <span id="dot-${b.id}-${ch}" class="status-dot"></span>
-                                    </button>`).join('')}
+                                ${[1, 2, 3].map(ch => `<button id="btn-ch-${b.id}-${ch}" onclick="_setCh('${b.id}', ${ch})" class="ch-btn px-4 py-1 ${ch===curCh?'active':''} ${l}">CH ${ch}<span id="dot-${b.id}-${ch}" class="status-dot"></span></button>`).join('')}
                             </div>
                             <div class="grid grid-cols-1 gap-2">
                                 <button onclick="_chk('${b.id}', ${b.respawn})" class="bg-blue-700 py-3 rounded-2xl text-xs font-bold text-white shadow-lg ${l}">เพิ่งตาย (${b.respawn} น.)</button>
@@ -239,6 +222,7 @@
 
         function _setCh(id, ch) {
             _selectedCh[id] = ch;
+            _hasAutoSwitched[id] = true; 
             [1, 2, 3].forEach(i => {
                 const btn = document.getElementById(`btn-ch-${id}-${i}`);
                 if (btn) btn.classList.toggle('active', i === ch);
@@ -248,36 +232,19 @@
 
         function _sync(g) {
             _db.ref(`groups/${g}/timers`).on('value', s => { _fbD = s.val() || {}; });
-            _db.ref(`groups/${g}/logs`).on('value', s => { 
-                _fbLogs = s.val() || {}; 
-                _updLog(); 
-                _updMedals(); 
-            });
+            _db.ref(`groups/${g}/logs`).on('value', s => { _fbLogs = s.val() || {}; _updLog(); _updMedals(); });
             document.getElementById('c-status').innerText = `● Connected: ${g.toUpperCase()}`;
             document.getElementById('c-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
         }
 
         function _updMedals() {
             const counts = {};
-            Object.values(_fbLogs).forEach(log => {
-                if (log.user) counts[log.user] = (counts[log.user] || 0) + 1;
-            });
+            Object.values(_fbLogs).forEach(log => { if (log.user) counts[log.user] = (counts[log.user] || 0) + 1; });
             const sorted = Object.entries(counts).sort(([,a], [,b]) => b - a).slice(0, 4);
             const medalCont = document.getElementById('hof-medal-list');
-            
-            if (sorted.length === 0) {
-                medalCont.innerHTML = `<div class="col-span-full text-center py-4 text-gray-500 text-xs italic">ยังไม่มีข้อมูลสถิติ</div>`;
-                return;
-            }
-
+            if (sorted.length === 0) { medalCont.innerHTML = `<div class="col-span-full text-center py-4 text-gray-500 text-xs italic">ยังไม่มีข้อมูลสถิติ</div>`; return; }
             const icons = ['🥇', '🥈', '🥉', '🎖️'];
-            medalCont.innerHTML = sorted.map(([name, count], i) => `
-                <div class="medal-card p-4 flex flex-col items-center justify-center text-center ${i===0?'medal-gold':''}">
-                    <div class="text-3xl mb-1">${icons[i]}</div>
-                    <div class="text-[11px] font-bold text-white truncate w-full uppercase tracking-tighter">${name}</div>
-                    <div class="text-[10px] text-blue-400 font-black mt-1">${count} RECORDS</div>
-                </div>
-            `).join('');
+            medalCont.innerHTML = sorted.map(([name, count], i) => `<div class="medal-card p-4 flex flex-col items-center justify-center text-center ${i===0?'medal-gold':''}"><div class="text-3xl mb-1">${icons[i]}</div><div class="text-[11px] font-bold text-white truncate w-full uppercase tracking-tighter">${name}</div><div class="text-[10px] text-blue-400 font-black mt-1">${count} RECORDS</div></div>`).join('');
         }
 
         function _updLog() {
@@ -286,131 +253,96 @@
             body.innerHTML = sorted.length ? sorted.map(i => `<tr><td class="font-bold text-white">${i.bossName}</td><td class="text-yellow-500 font-bold italic">CH ${i.ch}</td><td class="text-blue-400 font-bold">${i.user}</td><td class="text-gray-400 font-mono text-[10px]">${i.time}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center py-10 text-gray-600 italic">No Recent Records</td></tr>';
         }
 
-        /* --- UPDATED FUNCTION --- */
         function _updT(id) {
             const now = Date.now() + _srvOfst;
-            const ch = _selectedCh[id] || 1;
-            const t = _fbD[`${id}_ch${ch}`];
-            const tmE = document.getElementById(`tmr-${id}`), stE = document.getElementById(`st-${id}`), lgE = document.getElementById(`log-${id}`);
-            
+            let currentCh = _selectedCh[id] || 1;
+            const inputEl = document.getElementById(`in-${id}`);
+            const isFocusing = (document.activeElement === inputEl);
+            let aliveCh = null;
+
             [1,2,3].forEach(cNum => {
                 const dot = document.getElementById(`dot-${id}-${cNum}`);
-                if(dot) {
-                    const ct = _fbD[`${id}_ch${cNum}`];
-                    if(ct) {
-                        // FIX: ล้างข้อมูลขยะที่ไม่มี expireTime
-                        if (!ct.expireTime && _isE) {
-                            _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove();
-                            return;
-                        }
-                        const rSec = (ct.expireTime - now) / 1000;
-                        dot.className = (rSec <= 0) ? "status-dot alive" : "status-dot counting";
-                        // FIX: ตรวจสอบ rSec ไม่ให้เป็น NaN ก่อนทำ Cleanup นานเกิน 20 นาที
-                        if (!isNaN(rSec) && rSec < -1200 && _isE) { 
-                            _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); 
-                        }
-                    } else { dot.className = "status-dot"; }
-                }
+                const ct = _fbD[`${id}_ch${cNum}`];
+                if(ct) {
+                    // ป้องกันการแสดงผล undefined หากข้อมูลใน Firebase ไม่สมบูรณ์ (FIX บั๊กภาพที่ส่งมา)
+                    if (!ct.expireTime && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); return; }
+                    const rSec = (ct.expireTime - now) / 1000;
+                    if (rSec <= 0) {
+                        dot.className = "status-dot alive";
+                        if (aliveCh === null) aliveCh = cNum;
+                    } else { dot.className = "status-dot counting"; }
+                    if (!isNaN(rSec) && rSec < -1200 && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); }
+                } else if(dot) { dot.className = "status-dot"; }
             });
 
+            // Smart Auto-Switch Logic
+            if (aliveCh !== null && !_hasAutoSwitched[id] && !isFocusing) {
+                _selectedCh[id] = aliveCh;
+                currentCh = aliveCh;
+                _hasAutoSwitched[id] = true;
+                [1, 2, 3].forEach(i => {
+                    const btn = document.getElementById(`btn-ch-${id}-${i}`);
+                    if (btn) btn.classList.toggle('active', i === aliveCh);
+                });
+            }
+            if (aliveCh === null) _hasAutoSwitched[id] = false;
+
+            const t = _fbD[`${id}_ch${currentCh}`];
+            const tmE = document.getElementById(`tmr-${id}`), stE = document.getElementById(`st-${id}`), lgE = document.getElementById(`log-${id}`);
+            
             if (t && tmE) {
-                // FIX: ป้องกัน undefined แสดงผลบนหน้าจอ
                 const displayUser = t.user || "Unknown";
                 const displayTime = t.time || "--:--";
                 const r = Math.floor((t.expireTime - now) / 1000);
-                
-                lgE.innerText = `CH ${ch}: By ${displayUser} (${displayTime})`;
-                
+                lgE.innerText = `CH ${currentCh}: By ${displayUser} (${displayTime})`;
                 if (r > 0) {
                     let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
                     tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                     tmE.className = "text-4xl text-yellow-400 font-mono";
-                    stE.innerText = `CH ${ch} - COUNTING DOWN...`; stE.className = "text-[10px] text-gray-500 font-black mt-1 uppercase";
+                    stE.innerText = `CH ${currentCh} - COUNTING DOWN...`;
                 } else {
-                    tmE.innerText = `CH ${ch} ALIVE! ⚔️`; tmE.className = "text-3xl text-event-orange font-bold animate-pulse";
+                    tmE.innerText = `CH ${currentCh} ALIVE! ⚔️`; tmE.className = "text-3xl text-event-orange font-bold animate-pulse";
                     stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-[10px] text-event-orange font-black mt-1 uppercase";
-                    
-                    // FIX: ตรวจสอบความครบถ้วนของข้อมูลก่อนส่ง Webhook และแจ้งเตือน
                     if (!t.notified && t.expireTime && _isE) { 
-                        _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update({ notified: true }); 
-                        _post(id, "ALIVE", ch); 
+                        _db.ref(`groups/${_currG}/timers/${id}_ch${currentCh}`).update({ notified: true }); 
+                        _post(id, "ALIVE", currentCh); 
                     }
                 }
             } else if (tmE) {
                 tmE.innerText = "READY"; tmE.className = "text-4xl text-yellow-400 font-mono";
-                stE.innerText = `CH ${ch} - Ready to Hunt`; stE.className = "text-[10px] text-green-500 font-black mt-1 uppercase";
-                lgE.innerText = `CH ${ch}: No Data`;
+                stE.innerText = `CH ${currentCh} - Ready to Hunt`; lgE.innerText = `CH ${currentCh}: No Data`;
             }
         }
 
         function _loop() {
             setInterval(() => {
                 const now = Date.now() + _srvOfst;
-                
-                // 1. สร้าง Object สำหรับเก็บจำนวนบอสที่เกิด แยกตาม EP
-                // เริ่มต้นให้ทุก EP (1-11 และ all) เป็น 0 เสมอ เพื่อป้องกันเลขค้าง
                 const epCounts = { all: 0 };
                 for(let i=1; i<=11; i++) epCounts[i] = 0;
-
                 _bsData.forEach(b => {
                     _updT(b.id);
                     const card = document.getElementById(`card-${b.id}`);
                     let hasAnyAlive = false;
-
-                    // 2. ตรวจสอบสถานะบอสในแต่ละ Channel
                     [1, 2, 3].forEach(cNum => {
                         const timer = _fbD[`${b.id}_ch${cNum}`];
-                        
-                        // ตรวจสอบว่าต้องมี expireTime และเวลาต้องติดลบ (บอสเกิดแล้ว)
-                        if (timer && timer.expireTime && (timer.expireTime - now) <= 0) { 
-                            hasAnyAlive = true; 
-                        }
+                        if (timer && timer.expireTime && (timer.expireTime - now) <= 0) hasAnyAlive = true;
                     });
-
-                    // 3. แสดง Effect ไฟกระพริบที่การ์ดบอส
                     if(card) card.classList.toggle('alive-glow', hasAnyAlive);
-
-                    // 4. ถ้าบอสเกิด ให้นับยอดสะสมเข้าไปใน Badge ของ EP นั้นๆ
-                    if(hasAnyAlive) {
-                        epCounts.all++;
-                        if(b.ep) {
-                            epCounts[b.ep] = (epCounts[b.ep] || 0) + 1;
-                        }
-                    }
+                    if(hasAnyAlive) { epCounts.all++; if(b.ep) epCounts[b.ep]++; }
                 });
-
-                // 5. อัปเดตตัวเลขบนปุ่ม Filter (Badge)
                 Object.keys(epCounts).forEach(k => {
                     const badge = document.getElementById(`badge-${k}`);
-                    if(badge) {
-                        const count = epCounts[k];
-                        badge.innerText = count;
-                        // ถ้า count เป็น 0 ให้ซ่อน Badge ทันที
-                        if (count <= 0) {
-                            badge.classList.add('hidden');
-                        } else {
-                            badge.classList.remove('hidden');
-                        }
-                    }
+                    if(badge) { badge.innerText = epCounts[k]; badge.classList.toggle('hidden', epCounts[k] === 0); }
                 });
             }, 1000);
         }
-
-        window.onscroll = function() {
-            const btn = document.getElementById("backToTop");
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                btn.classList.add("show");
-            } else {
-                btn.classList.remove("show");
-            }
-        };
 
         function _chk(id, m) {
             if (!_isE) return;
             const ch = _selectedCh[id] || 1;
             const now = Date.now() + _srvOfst;
-            const existingTimer = _fbD[`${id}_ch${ch}`];
-            if (existingTimer && existingTimer.expireTime > now) {
+            const existing = _fbD[`${id}_ch${ch}`];
+            if (existing && existing.expireTime > now) {
                 const b = _bsData.find(x => x.id === id);
                 if (!confirm(`⚠️ บอส [${b.name}] CH ${ch} กำลังนับถอยหลังอยู่\nต้องการตั้งเวลาใหม่ทับของเดิมใช่หรือไม่?`)) return;
             }
@@ -420,26 +352,15 @@
             _db.ref(`groups/${_currG}/logs`).push({ bossName: b.name, ch: ch, user: n, time: timeStr, timestamp: now });
         }
 
-        function _mchk(id) { 
-            const v = document.getElementById(`in-${id}`).value; 
-            if(v){ _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value=''; } 
-        }
-
-        function _rst(id) { const ch = _selectedCh[id] || 1; if(_isE && confirm(`Reset CH ${ch} ของบอสตัวนี้?`)) { 
-            _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove(); 
-            _post(id, "RESET", ch);
-        } }
+        function _mchk(id) { const v = document.getElementById(`in-${id}`).value; if(v){ _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value=''; } }
+        function _rst(id) { const ch = _selectedCh[id] || 1; if(_isE && confirm(`Reset CH ${ch}?`)) { _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove(); _post(id, "RESET", ch); } }
         function _pin(id) { const i = _pnBs.indexOf(id); i>-1 ? _pnBs.splice(i,1) : _pnBs.push(id); localStorage.setItem('tos_pinned_bosses', JSON.stringify(_pnBs)); _rend(); }
-        
         function _save() {
             let g = document.getElementById('_grp').value, n = document.getElementById('_usr').value.trim();
             if (n === "/testadmin") { g = "test_server"; n = "Admin_Tester"; }
-            if (g && n) { 
-                localStorage.setItem('tos_group_name', g); localStorage.setItem('tos_uret_name', n); localStorage.setItem('tos_locked', 'true'); 
-                location.reload(); 
-            }
+            if (g && n) { localStorage.setItem('tos_group_name', g); localStorage.setItem('tos_uret_name', n); localStorage.setItem('tos_locked', 'true'); location.reload(); }
         }
-        function _logout() { if(confirm("Logout Profile?")) { localStorage.clear(); location.reload(); } }
+        function _logout() { if(confirm("Logout?")) { localStorage.clear(); location.reload(); } }
 
         async function _post(id, ty, ch) {
             const g = localStorage.getItem('tos_group_name');
@@ -455,6 +376,8 @@
                 : `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** ที่ **${mapLoc} (CH ${ch})** (Lv. ${b.lv} | EP ${b.ep})`;
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
         }
+
+        window.onscroll = function() { const btn = document.getElementById("backToTop"); if (document.documentElement.scrollTop > 300) btn.classList.add("show"); else btn.classList.remove("show"); };
         _init();
     </script>
 </body>
