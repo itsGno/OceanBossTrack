@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>TOS-M Tracker V1.6.0 - Hall of Fame Edition</title>
+    <title>TOS-M Tracker V1.6.1 - Stable Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
@@ -59,9 +59,10 @@
                         <label class="block text-xs text-yellow-500 font-bold mb-1 uppercase tracking-widest">Server</label>
                         <select id="_grp" onchange="_vld()" class="w-full bg-black-40 border border-gray-600 rounded-xl px-4 py-2 text-sm text-white outline-none">
                             <option value="" disabled selected>เลือกเซิร์ฟเวอร์...</option>
-                            <option value="giltine">giltine</option><option value="austeja">austeja</option><option value="zemyna">zemyna</option>
-                            <option value="laima">laima</option><option value="vaivora">vaivora</option><option value="ausirine">ausirine</option>
-                            <option value="vakarine">vakarine</option><option value="saule">saule</option>
+                            <option value="giltine">GILTINE</option><option value="saule">SAULE</option>
+                            <option value="austeja">AUSTEJA</option><option value="zemyna">ZEMYNA</option>
+                            <option value="laima">LAIMA</option><option value="vaivora">VAIVORA</option>
+                            <option value="ausirine">AUSIRINE</option><option value="vakarine">VAKARINE</option>
                         </select>
                     </div>
                     <div>
@@ -112,7 +113,7 @@
     </button>
 
     <script>
-        const APP_VERSION = "1.6.0"; 
+        const APP_VERSION = "1.6.1"; 
         (function checkVersion() {
             const savedVersion = localStorage.getItem('app_version');
             if (savedVersion !== APP_VERSION) {
@@ -162,7 +163,7 @@
                     document.getElementById('input-fields').classList.add('hidden'); 
                     document.getElementById('locked-fields').classList.remove('hidden'); 
                     document.getElementById('display-usr').innerText = sN; 
-                    document.getElementById('display-grp').innerText = sG; 
+                    document.getElementById('display-grp').innerText = sG.toUpperCase(); 
                     _sync(sG); 
                 }
                 _rend(); _vld(); _loop();
@@ -250,13 +251,12 @@
             _db.ref(`groups/${g}/logs`).on('value', s => { 
                 _fbLogs = s.val() || {}; 
                 _updLog(); 
-                _updMedals(); // Sync medals when logs change
+                _updMedals(); 
             });
-            document.getElementById('c-status').innerText = `● Connected: ${g}`;
+            document.getElementById('c-status').innerText = `● Connected: ${g.toUpperCase()}`;
             document.getElementById('c-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
         }
 
-        // NEW: Medal Update Logic
         function _updMedals() {
             const counts = {};
             Object.values(_fbLogs).forEach(log => {
@@ -286,6 +286,7 @@
             body.innerHTML = sorted.length ? sorted.map(i => `<tr><td class="font-bold text-white">${i.bossName}</td><td class="text-yellow-500 font-bold italic">CH ${i.ch}</td><td class="text-blue-400 font-bold">${i.user}</td><td class="text-gray-400 font-mono text-[10px]">${i.time}</td></tr>`).join('') : '<tr><td colspan="4" class="text-center py-10 text-gray-600 italic">No Recent Records</td></tr>';
         }
 
+        /* --- UPDATED FUNCTION --- */
         function _updT(id) {
             const now = Date.now() + _srvOfst;
             const ch = _selectedCh[id] || 1;
@@ -297,16 +298,29 @@
                 if(dot) {
                     const ct = _fbD[`${id}_ch${cNum}`];
                     if(ct) {
+                        // FIX: ล้างข้อมูลขยะที่ไม่มี expireTime
+                        if (!ct.expireTime && _isE) {
+                            _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove();
+                            return;
+                        }
                         const rSec = (ct.expireTime - now) / 1000;
                         dot.className = (rSec <= 0) ? "status-dot alive" : "status-dot counting";
-                        if (rSec < -1200 && _isE) { _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); }
+                        // FIX: ตรวจสอบ rSec ไม่ให้เป็น NaN ก่อนทำ Cleanup นานเกิน 20 นาที
+                        if (!isNaN(rSec) && rSec < -1200 && _isE) { 
+                            _db.ref(`groups/${_currG}/timers/${id}_ch${cNum}`).remove(); 
+                        }
                     } else { dot.className = "status-dot"; }
                 }
             });
 
             if (t && tmE) {
+                // FIX: ป้องกัน undefined แสดงผลบนหน้าจอ
+                const displayUser = t.user || "Unknown";
+                const displayTime = t.time || "--:--";
                 const r = Math.floor((t.expireTime - now) / 1000);
-                lgE.innerText = `CH ${ch}: By ${t.user} (${t.time})`;
+                
+                lgE.innerText = `CH ${ch}: By ${displayUser} (${displayTime})`;
+                
                 if (r > 0) {
                     let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
                     tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
@@ -315,7 +329,9 @@
                 } else {
                     tmE.innerText = `CH ${ch} ALIVE! ⚔️`; tmE.className = "text-3xl text-event-orange font-bold animate-pulse";
                     stE.innerText = "ตีมอนปลุกบอส!"; stE.className = "text-[10px] text-event-orange font-black mt-1 uppercase";
-                    if (!t.notified && _isE) { 
+                    
+                    // FIX: ตรวจสอบความครบถ้วนของข้อมูลก่อนส่ง Webhook และแจ้งเตือน
+                    if (!t.notified && t.expireTime && _isE) { 
                         _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update({ notified: true }); 
                         _post(id, "ALIVE", ch); 
                     }
@@ -330,32 +346,56 @@
         function _loop() {
             setInterval(() => {
                 const now = Date.now() + _srvOfst;
+                
+                // 1. สร้าง Object สำหรับเก็บจำนวนบอสที่เกิด แยกตาม EP
+                // เริ่มต้นให้ทุก EP (1-11 และ all) เป็น 0 เสมอ เพื่อป้องกันเลขค้าง
                 const epCounts = { all: 0 };
+                for(let i=1; i<=11; i++) epCounts[i] = 0;
+
                 _bsData.forEach(b => {
                     _updT(b.id);
                     const card = document.getElementById(`card-${b.id}`);
                     let hasAnyAlive = false;
+
+                    // 2. ตรวจสอบสถานะบอสในแต่ละ Channel
                     [1, 2, 3].forEach(cNum => {
                         const timer = _fbD[`${b.id}_ch${cNum}`];
-                        if (timer && (timer.expireTime - now) <= 0) { hasAnyAlive = true; }
+                        
+                        // ตรวจสอบว่าต้องมี expireTime และเวลาต้องติดลบ (บอสเกิดแล้ว)
+                        if (timer && timer.expireTime && (timer.expireTime - now) <= 0) { 
+                            hasAnyAlive = true; 
+                        }
                     });
+
+                    // 3. แสดง Effect ไฟกระพริบที่การ์ดบอส
                     if(card) card.classList.toggle('alive-glow', hasAnyAlive);
+
+                    // 4. ถ้าบอสเกิด ให้นับยอดสะสมเข้าไปใน Badge ของ EP นั้นๆ
                     if(hasAnyAlive) {
                         epCounts.all++;
-                        if(b.ep) epCounts[b.ep] = (epCounts[b.ep] || 0) + 1;
+                        if(b.ep) {
+                            epCounts[b.ep] = (epCounts[b.ep] || 0) + 1;
+                        }
                     }
                 });
+
+                // 5. อัปเดตตัวเลขบนปุ่ม Filter (Badge)
                 Object.keys(epCounts).forEach(k => {
                     const badge = document.getElementById(`badge-${k}`);
                     if(badge) {
-                        badge.innerText = epCounts[k];
-                        badge.classList.toggle('hidden', epCounts[k] === 0);
+                        const count = epCounts[k];
+                        badge.innerText = count;
+                        // ถ้า count เป็น 0 ให้ซ่อน Badge ทันที
+                        if (count <= 0) {
+                            badge.classList.add('hidden');
+                        } else {
+                            badge.classList.remove('hidden');
+                        }
                     }
                 });
             }, 1000);
         }
 
-        // Back to Top Logic
         window.onscroll = function() {
             const btn = document.getElementById("backToTop");
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
@@ -406,7 +446,7 @@
             const w = _webhooks[g]; if (!w) return;
             const role_ids = { "giltine": "1477963807245602837", "austeja": "1477969803967725648", "saule": "1477969920456265748", "zemyna": "1477970066338349227", "laima": "1477970107350122557", "vaivora": "1477970160492089481", "ausirine": "1477970230734098432", "vakarine": "1477970281862664242" };
             const b = _bsData.find(x => x.id === id), u = localStorage.getItem('tos_uret_name'), rId = role_ids[g] || ""; 
-            const mention = rId ? `<@&${rId}>` : `@${g}`;
+            const mention = rId ? `<@&${rId}>` : `@${g.toUpperCase()}`;
             const nowServer = Date.now() + _srvOfst, nowTH = new Date(nowServer).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const mapLoc = `${b.map}${b.map_ext ? ' (' + b.map_ext + ')' : ''}`;
             let prefix = (g === "test_server") ? "🧪 **[TEST MESSAGE]** " : "";
