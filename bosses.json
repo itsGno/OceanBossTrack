@@ -398,7 +398,7 @@
   {
     "id": "strong_chapparition",
     "name": "Strong Chapparition",
-    "lv": 0,
+    "lv": 75,
     "ep": 9,
     "respawn": 120,
     "map": "Goddess Ancient Garden",
@@ -410,7 +410,7 @@
   {
     "id": "cowardly_devilglove",
     "name": "Cowardly Devilglove",
-    "lv": 0,
+    "lv": 76,
     "ep": 9,
     "respawn": 120,
     "map": "Fedimian Suburbs",
@@ -422,7 +422,7 @@
   {
     "id": "strong_salamander",
     "name": "Strong Salamander",
-    "lv": 0,
+    "lv": 77,
     "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 1F",
@@ -434,7 +434,7 @@
   {
     "id": "strong_mineloader",
     "name": "Strong Mineloader",
-    "lv": 0,
+    "lv": 78,
     "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 2F",
@@ -446,7 +446,7 @@
   {
     "id": "indignant_helga_sircle",
     "name": "Indignant Helga Sircle",
-    "lv": 0,
+    "lv": 79,
     "ep": 9,
     "respawn": 120,
     "map": "Mage Tower 3F",
@@ -458,7 +458,7 @@
   {
     "id": "cowardly_glackuman",
     "name": "Cowardly Glackuman",
-    "lv": 0,
+    "lv": 80,
     "ep": 10,
     "respawn": 120,
     "map": "Penitence Route",
@@ -470,7 +470,7 @@
   {
     "id": "strong_fireload",
     "name": "Strong Fireload",
-    "lv": 0,
+    "lv": 81,
     "ep": 10,
     "respawn": 120,
     "map": "Main Building",
@@ -482,7 +482,7 @@
   {
     "id": "strong_rtiteris",
     "name": "Strong Riteris",
-    "lv": 0,
+    "lv": 82,
     "ep": 10,
     "respawn": 120,
     "map": "Grand Corridor",
@@ -494,7 +494,7 @@
   {
     "id": "indignant_naktis",
     "name": "Indignant Naktis",
-    "lv": 0,
+    "lv": 83,
     "ep": 10,
     "respawn": 120,
     "map": "Sanctuary",
@@ -506,7 +506,7 @@
   {
     "id": "cowardly_gaigalas",
     "name": "Cowardly Gaigalas",
-    "lv": 0,
+    "lv": 85,
     "ep": 11,
     "respawn": 120,
     "map": "Laukyme Swamp",
@@ -518,7 +518,7 @@
   {
     "id": "strong_teraox",
     "name": "Strong Teraox",
-    "lv": 0,
+    "lv": 86,
     "ep": 11,
     "respawn": 120,
     "map": "Tyla Monastery",
@@ -530,7 +530,7 @@
   {
     "id": "strong_ferretmarauder",
     "name": "Strong Ferretmarauder",
-    "lv": 0,
+    "lv": 87,
     "ep": 11,
     "respawn": 120,
     "map": "Bellai Rainforest",
@@ -542,7 +542,7 @@
   {
     "id": "strong_kirmeleech",
     "name": "Strong Kirmeleech",
-    "lv": 0,
+    "lv": 88,
     "ep": 11,
     "respawn": 120,
     "map": "Zeraha",
@@ -554,7 +554,7 @@
   {
     "id": "indignant_zaura",
     "name": "Indignant Zaura",
-    "lv": 0,
+    "lv": 89,
     "ep": 11,
     "respawn": 120,
     "map": "Seir Rainforest",
