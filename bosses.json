@@ -562,5 +562,101 @@
     "element": "Dark",
     "race": "Demon",
     "img": "https://img5.pic.in.th/file/secure-sv1/zaura.png"
+  },
+  {
+    "id": "strong_stone_whale",
+    "name": "Strong Stone Whale",
+    "lv": 90,
+    "ep": 12,
+    "respawn": 120,
+    "map": "Coastal Fortress",
+    "map_ext": "EP12-90",
+    "element": "Earth",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_stone_whale.png"
+  },
+  {
+    "id": "strong_minotaurs",
+    "name": "Strong Minotaurs",
+    "lv": 91,
+    "ep": 12,
+    "respawn": 120,
+    "map": "Dingofasil District",
+    "map_ext": "EP12-91",
+    "element": "Fire",
+    "race": "Demon",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_minotaurs.png"
+  },
+  {
+    "id": "strong_sitrygailla",
+    "name": "Strong Sitrygailla",
+    "lv": 92,
+    "ep": 12,
+    "respawn": 120,
+    "map": "Storage Quarter",
+    "map_ext": "EP12-92",
+    "element": "Dark",
+    "race": "Beast",
+    "img": "https://img5.pic.in.th/file/secure-sv1/Svitrigaila.png"
+  },
+  {
+    "id": "indignant_marnox",
+    "name": "Indignant Marnox",
+    "lv": 93,
+    "ep": 12,
+    "respawn": 120,
+    "map": "Fortress Battlegrounds",
+    "map_ext": "EP12-93",
+    "element": "Earth",
+    "race": "Demon",
+    "img": "https://img2.pic.in.th/mamox.png"
+  },
+  {
+    "id": "strong_colimencia",
+    "name": "Strong Colimencia",
+    "lv": 95,
+    "ep": 13,
+    "respawn": 120,
+    "map": "Alemeth Forest",
+    "map_ext": "EP13-95",
+    "element": "Ice",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_colimencia.png"
+  },
+  {
+    "id": "strong_sequoia",
+    "name": "Strong Sequoia",
+    "lv": 98,
+    "ep": 13,
+    "respawn": 120,
+    "map": "Barha Forest",
+    "map_ext": "EP13-98",
+    "element": "Ice",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_sequoia_blue.png"
+  },
+  {
+    "id": "strong_neop",
+    "name": "Strong Neop",
+    "lv": 101,
+    "ep": 13,
+    "respawn": 120,
+    "map": "Kalejimas Lounge",
+    "map_ext": "EP13-101",
+    "element": "Ice",
+    "race": "Insects",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_neop.png"
+  },
+  {
+    "id": "indignant_nebulas",
+    "name": "Indignant Nebulas",
+    "lv": 103,
+    "ep": 13,
+    "respawn": 120,
+    "map": "Investigation Room",
+    "map_ext": "EP13-103",
+    "element": "Dark",
+    "race": "Demon",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_chiefguard.png"
   }
 ]
