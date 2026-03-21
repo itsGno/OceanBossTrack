@@ -466,7 +466,7 @@
                 _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove().then(() => {
                     _post(id, "RESET", ch);
                     const nextT = new Date(pD.unlockTime).toLocaleTimeString('th-TH');
-                    alert(`⚠️ บันทึกการลบครั้งที่ ${pD.count}\nคุณจะถูกระงับการใช้งานจนถึงเวลา ${nextT}`);
+                    //alert(`⚠️ บันทึกการลบครั้งที่ ${pD.count}\nคุณจะถูกระงับการใช้งานจนถึงเวลา ${nextT}`);
                     setTimeout(() => { _isInternalCoolingDown = false; }, 2000);
                 });
             }
