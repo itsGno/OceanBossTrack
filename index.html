@@ -37,6 +37,9 @@
         .stage-btn.active-3 { background: #8b5cf6; color: white; border-color: #a78bfa; }
         .stage-btn.active-4 { background: #ec4899; color: white; border-color: #f472b6; }
         .stage-btn.active-5 { background: #f97316; color: white; border-color: #fb923c; animation: pulse 1s infinite; }
+        .spawned-btn { background: #065f46; color: #34d399; border: 1px solid #059669; }
+        .spawned-btn:hover { background: #059669; color: white; }
+        .spawned-btn.is-spawned { background: #dc2626; color: white; border-color: #ef4444; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         .status-dot { position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0b101a; display: none; z-index: 10; }
@@ -222,8 +225,9 @@
                             <div id="tmr-${b.id}" class="text-4xl text-yellow-400 font-mono">READY</div>
                             <div id="st-${b.id}" class="text-[10px] text-green-500 font-black mt-1 uppercase">Ready to Hunt</div>
                             <div class="mt-2 flex justify-center gap-1" id="stage-cont-${b.id}">
-                                ${[1, 2, 3, 4, 5].map(num => `<button id="btn-stg-${b.id}-${num}" onclick="_setStage('${b.id}', ${num})" class="stage-btn ${l}">${num === 5 ? 'BOSS' : 'ST ' + num}</button>`).join('')}
+                                ${[1, 2, 3, 4, 5].map(num => `<button id="btn-stg-${b.id}-${num}" onclick="_setStage('${b.id}', ${num})" class="stage-btn ${l}">${num === 5 ? '⚔️ BOSS' : 'P' + num}</button>`).join('')}
                             </div>
+                            <button id="btn-spawned-${b.id}" onclick="_markSpawned('${b.id}')" class="mt-2 spawned-btn text-xs font-bold py-2 px-6 rounded-xl transition ${l}">🎯 เกิดแล้ว!</button>
                         </div>
                         <div class="mt-4">
                             <div class="flex flex-wrap gap-1 mb-2 justify-center">
@@ -279,6 +283,42 @@
             }
 
             _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update(updateData);
+        }
+
+        function _markSpawned(id) {
+            if (!_isE) return;
+            const ch = _selectedCh[id] || 1;
+            const n = localStorage.getItem('tos_uret_name');
+            const b = _bsData.find(x => x.id === id);
+            const now = Date.now() + _srvOfst;
+            const currentTimer = _fbD[`${id}_ch${ch}`];
+
+            if (!currentTimer || currentTimer.expireTime > now) {
+                alert(`❌ บอส CH ${ch} ยังไม่ถึงช่วงปลุกบอส!`);
+                return;
+            }
+
+            if (currentTimer.spawned) {
+                alert(`⚠️ บอสนี้ถูกมาร์คว่าเกิดแล้ว โดย ${currentTimer.spawned_by || 'Unknown'}`);
+                return;
+            }
+
+            if (!confirm(`🎯 ยืนยัน: บอส [${b.name}] CH ${ch} เกิดแล้ว?`)) return;
+
+            const timeStr = new Date(now).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update({
+                spawned: true,
+                spawned_by: n,
+                spawned_time: timeStr,
+                stage: 5,
+                stage_by: n,
+                last_update: now
+            });
+            _db.ref(`groups/${_currG}/logs`).push({
+                bossName: b.name + " (เกิดแล้ว!)",
+                ch: ch, user: n, time: timeStr, timestamp: now
+            });
+            _post(id, "BOSS_SPAWN", ch);
         }
 
         function _sync(g) {
@@ -353,14 +393,23 @@
                     }
                 });
 
+                const spawnedBtn = document.getElementById(`btn-spawned-${id}`);
+
                 if (r > 0) {
                     let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
                     tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                     tmE.className = "text-4xl text-yellow-400 font-mono";
                     stE.innerText = `CH ${currentCh} - COUNTING DOWN...`; stE.className = "text-[10px] text-gray-500 font-black mt-1 uppercase";
+                    if (spawnedBtn) { spawnedBtn.classList.add('btn-locked'); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
                 } else {
                     tmE.innerText = `CH ${currentCh} ALIVE! ⚔️`; tmE.className = "text-3xl text-event-orange font-bold animate-pulse";
-                    stE.innerText = curStage === 5 ? "บอสเกิดแล้ว! ⚔️" : "ตีมอนปลุกบอส!"; stE.className = "text-[10px] text-event-orange font-black mt-1 uppercase";
+                    if (t.spawned) {
+                        stE.innerText = `บอสเกิดแล้ว! โดย ${t.spawned_by || '???'} (${t.spawned_time || ''}) ⚔️`; stE.className = "text-[10px] text-red-400 font-black mt-1 uppercase";
+                        if (spawnedBtn) { spawnedBtn.classList.remove('btn-locked'); spawnedBtn.classList.add('is-spawned'); spawnedBtn.innerText = `🔴 เกิดแล้ว! (${t.spawned_by})`; }
+                    } else {
+                        stE.innerText = curStage === 5 ? "บอสเกิดแล้ว! ⚔️" : `ตีมอนปลุกบอส! (Phase ${curStage || '-'})`; stE.className = "text-[10px] text-event-orange font-black mt-1 uppercase";
+                        if (spawnedBtn) { spawnedBtn.classList.toggle('btn-locked', !_isE); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
+                    }
                     if (!t.notified && _isE) { 
                         _db.ref(`groups/${_currG}/timers/${id}_ch${currentCh}`).update({ notified: true }); 
                         _post(id, "ALIVE", currentCh); 
@@ -374,6 +423,8 @@
                     const sBtn = document.getElementById(`btn-stg-${id}-${num}`);
                     if (sBtn) sBtn.className = `stage-btn btn-locked`;
                 });
+                const spawnedBtn2 = document.getElementById(`btn-spawned-${id}`);
+                if (spawnedBtn2) { spawnedBtn2.classList.add('btn-locked'); spawnedBtn2.classList.remove('is-spawned'); spawnedBtn2.innerText = '🎯 เกิดแล้ว!'; }
             }
         }
 
