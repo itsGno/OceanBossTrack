@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>TOS-M Boss Editor - Updated Race Type</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #0b101a; color: #e2e8f0; }
+        input, select { background-color: #1e293b !important; border: 1px solid #334155 !important; color: white !important; }
+        option { background-color: #1e293b; }
+        #auth-gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #admin-content { display: none; }
+        #admin-content.authed { display: block; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Auth Gate -->
+    <div id="auth-gate">
+        <div class="bg-gray-900 p-8 rounded-3xl border border-gray-800 shadow-2xl w-full max-w-sm">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-3">🔐</div>
+                <h1 class="text-xl font-bold text-white">Admin Access</h1>
+                <p class="text-gray-500 text-xs mt-1">Enter bearer token to continue</p>
+            </div>
+            <input type="password" id="auth-token" placeholder="Bearer token..." class="w-full p-3 rounded-xl outline-none focus:border-blue-500 mb-3 text-sm" onkeydown="if(event.key==='Enter') authenticate()">
+            <button onclick="authenticate()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition text-sm">🔓 Authenticate</button>
+            <div id="auth-error" class="text-red-400 text-xs text-center mt-3 hidden">❌ Invalid token</div>
+        </div>
+    </div>
+
+    <!-- Admin Content (hidden until auth) -->
+    <div id="admin-content" class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8 bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-2xl">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Boss Editor <span class="text-blue-500 text-sm">V1.7.1</span></h1>
+                <p class="text-gray-400 text-xs mt-1">จัดการข้อมูลบอสและแมพเพิ่มเติม (Update Race: Aberration)</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <button onclick="exportJSON()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Export JSON</button>
+                <input type="file" id="importFile" class="hidden" onchange="importJSON(event)">
+                <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Import JSON</button>
+                <a href="sync.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition inline-block">🔄 Sync Images</a>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">🔒 Logout</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-xl sticky top-8">
+                    <h2 id="form-title" class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-blue-500 rounded-full"></span>จัดการข้อมูลบอส
+                    </h2>
+                    
+                    <input type="hidden" id="edit-index" value="-1">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Boss ID (ภาษาอังกฤษ)</label>
+                                <input type="text" id="b-id" class="w-full p-3 rounded-xl outline-none focus:border-blue-500" placeholder="e.g. nepen">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">ชื่อบอส</label>
+                                <input type="text" id="b-name" class="w-full p-3 rounded-xl outline-none focus:border-blue-500" placeholder="ชื่อภาษาไทย">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">Level</label>
+                                <input type="number" id="b-lv" class="w-full p-3 rounded-xl outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">EP</label>
+                                <input type="number" id="b-ep" class="w-full p-3 rounded-xl outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">เกิดใหม่ (นาที)</label>
+                                <input type="number" id="b-respawn" value="120" class="w-full p-3 rounded-xl outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">แผนที่หลัก</label>
+                                <input type="text" id="b-map" class="w-full p-3 rounded-xl outline-none focus:border-blue-500" placeholder="ระบุชื่อแผนที่">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">ข้อมูลแมพเพิ่มเติม</label>
+                                <input type="text" id="b-map-ext" class="w-full p-3 rounded-xl outline-none focus:border-blue-500" placeholder="เช่น พิกัด หรือ จุดเกิด">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">ธาตุ</label>
+                                <select id="b-element" class="w-full p-3 rounded-xl outline-none">
+                                    <option value="Fire">Fire</option><option value="Earth">Earth</option>
+                                    <option value="Ice">Ice</option><option value="Lightning">Lightning</option>
+                                    <option value="Light">Light</option><option value="Dark">Dark</option>
+                                    <option value="None">None</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">เผ่า</label>
+                                <select id="b-race" class="w-full p-3 rounded-xl outline-none">
+                                    <option value="Plant">Plant</option><option value="Beast">Beast</option>
+                                    <option value="Insects">Insects</option>
+                                    <option value="Aberration">Aberration</option> <option value="Demon">Demon</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">URL รูปภาพ</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="b-img" class="flex-1 p-3 rounded-xl outline-none focus:border-blue-500" placeholder="https://...">
+                                <button onclick="autoFindImage()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 rounded-xl text-xs font-bold transition whitespace-nowrap" title="Auto-find image from tosbase.com">🔍 Auto</button>
+                            </div>
+                            <div id="img-candidates" class="mt-2 flex flex-wrap gap-2 hidden"></div>
+                            <div id="img-preview" class="mt-2 hidden">
+                                <img id="img-preview-tag" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-4">
+                            <button onclick="saveBoss()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold shadow-lg transition">บันทึกข้อมูล</button>
+                            <button onclick="resetForm()" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-4 rounded-2xl font-bold transition">ยกเลิก</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-white">รายการบอสทั้งหมด (<span id="count">0</span>)</h3>
+                </div>
+                <div id="boss-list" class="grid grid-cols-1 gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bosses = [];
+
+        function render() {
+            const list = document.getElementById('boss-list');
+            document.getElementById('count').innerText = bosses.length;
+            list.innerHTML = bosses.map((b, i) => `
+                <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 flex items-center gap-4 hover:border-blue-500 transition group shadow-md">
+                    <img src="${b.img || 'https://via.placeholder.com/150'}" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700 group-hover:border-blue-500 transition">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-lg truncate text-white">${b.name}</h4>
+                            <span class="bg-yellow-600 text-black text-[10px] px-1.5 py-0.5 rounded font-black">EP ${b.ep || '?'}</span>
+                            <span class="text-yellow-500 text-[10px] font-bold">LV.${b.lv || '???'}</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 flex flex-wrap gap-2 mt-1">
+                            <span class="bg-gray-800 px-2 py-0.5 rounded text-red-400 border border-gray-700">
+                                📍 ${b.map}${b.map_ext ? ' (' + b.map_ext + ')' : ''} 
+                            </span>
+                            <span class="bg-gray-800 px-2 py-0.5 rounded text-blue-400 border border-gray-700 font-bold uppercase italic">${b.element}</span>
+                            <span class="bg-gray-800 px-2 py-0.5 rounded text-green-400 border border-gray-700 font-bold uppercase italic">${b.race}</span>
+                            <span class="bg-gray-800 px-2 py-0.5 rounded text-gray-300 border border-gray-700 italic">⏳ ${b.respawn} m</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <button onclick="editBoss(${i})" class="text-xs bg-blue-900/30 text-blue-400 px-4 py-1.5 rounded-lg hover:bg-blue-900/60 border border-blue-900/50">แก้ไข</button>
+                        <button onclick="deleteBoss(${i})" class="text-xs bg-red-900/30 text-red-400 px-4 py-1.5 rounded-lg hover:bg-red-900/60 border border-red-900/50">ลบ</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveBoss() {
+            const index = document.getElementById('edit-index').value;
+            const data = {
+                id: document.getElementById('b-id').value.trim(),
+                name: document.getElementById('b-name').value.trim(),
+                lv: parseInt(document.getElementById('b-lv').value) || 0,
+                ep: parseInt(document.getElementById('b-ep').value) || 0,
+                respawn: parseInt(document.getElementById('b-respawn').value),
+                map: document.getElementById('b-map').value.trim() || "Unknown",
+                map_ext: document.getElementById('b-map-ext').value.trim() || "",
+                element: document.getElementById('b-element').value,
+                race: document.getElementById('b-race').value,
+                img: document.getElementById('b-img').value.trim()
+            };
+            if(!data.id || !data.name) return alert("กรุณาใส่ชื่อบอส");
+            if(index == -1) bosses.push(data); else bosses[index] = data;
+            resetForm(); render();
+        }
+
+        function editBoss(i) {
+            const b = bosses[i];
+            document.getElementById('edit-index').value = i;
+            document.getElementById('b-id').value = b.id;
+            document.getElementById('b-name').value = b.name;
+            document.getElementById('b-lv').value = b.lv || "";
+            document.getElementById('b-ep').value = b.ep || "";
+            document.getElementById('b-respawn').value = b.respawn;
+            document.getElementById('b-element').value = b.element;
+            document.getElementById('b-race').value = b.race;
+            document.getElementById('b-img').value = b.img;
+            document.getElementById('b-map').value = b.map;
+            document.getElementById('b-map-ext').value = b.map_ext || "";
+            document.getElementById('form-title').innerText = "แก้ไขข้อมูล: " + b.name;
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function deleteBoss(i) { if(confirm('ยืนยันการลบ?')) { bosses.splice(i, 1); render(); } }
+
+        function resetForm() {
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('b-id').value = "";
+            document.getElementById('b-name').value = "";
+            document.getElementById('b-lv').value = "";
+            document.getElementById('b-ep').value = "";
+            document.getElementById('b-respawn').value = "120";
+            document.getElementById('b-map').value = "";
+            document.getElementById('b-map-ext').value = "";
+            document.getElementById('b-img').value = "";
+            document.getElementById('form-title').innerText = "จัดการข้อมูลบอส";
+        }
+
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bosses, null, 2));
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "bosses.json"); dl.click();
+        }
+
+        function importJSON(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try { bosses = JSON.parse(e.target.result); render(); } catch (err) { alert("ไฟล์ไม่ถูกต้อง"); }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        // Auto-find image from tosbase.com
+        const TOSBASE_IMG = "https://www.tosbase.com/content/img/icons/monsters/";
+
+        function checkImg(url) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        async function autoFindImage() {
+            const bossId = document.getElementById('b-id').value.trim();
+            const bossName = document.getElementById('b-name').value.trim();
+            if (!bossId && !bossName) return alert("กรุณากรอก Boss ID หรือชื่อบอสก่อน");
+
+            const container = document.getElementById('img-candidates');
+            container.classList.remove('hidden');
+            container.innerHTML = '<span class="text-xs text-gray-500">🔍 Searching tosbase.com...</span>';
+
+            const nameKey = (bossId || bossName.toLowerCase().replace(/\s+/g, '_')).replace(/^(cowardly|strong|indignant|angry)_/, '');
+            const slugs = [
+                `boss_${nameKey}`, `m_boss_${nameKey}`, `id_boss_${nameKey}`,
+                `mon_${nameKey}`, `boss_${nameKey}_m`, `boss_${nameKey}_blue`
+            ];
+
+            const found = [];
+            for (const slug of slugs) {
+                const url = `${TOSBASE_IMG}${slug}.png`;
+                if (await checkImg(url)) found.push({ slug, url });
+            }
+
+            if (found.length === 0) {
+                container.innerHTML = '<span class="text-xs text-red-400">ไม่พบรูปภาพ — ลองเปลี่ยน Boss ID</span>';
+            } else {
+                container.innerHTML = found.map(f =>
+                    `<div class="flex flex-col items-center gap-1 cursor-pointer" onclick="document.getElementById('b-img').value='${f.url}'; showPreview('${f.url}');">
+                        <img src="${f.url}" class="w-12 h-12 rounded-lg object-cover bg-black border-2 border-transparent hover:border-blue-500 transition">
+                        <span class="text-[9px] text-gray-500">${f.slug}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function showPreview(url) {
+            const preview = document.getElementById('img-preview');
+            const tag = document.getElementById('img-preview-tag');
+            preview.classList.remove('hidden');
+            tag.src = url;
+        }
+
+        // Show preview when image URL changes
+        document.getElementById('b-img').addEventListener('input', function() {
+            if (this.value.trim()) showPreview(this.value.trim());
+        });
+
+        // --- Auth Bearer Token System ---
+        const ADMIN_TOKEN_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // SHA-256 of 'password' — CHANGE THIS
+
+        async function hashToken(token) {
+            const data = new TextEncoder().encode(token);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function authenticate() {
+            const input = document.getElementById('auth-token').value.trim();
+            if (!input) return;
+            const hash = await hashToken(input);
+            if (hash === ADMIN_TOKEN_HASH) {
+                sessionStorage.setItem('admin_bearer', input);
+                showAdmin();
+            } else {
+                document.getElementById('auth-error').classList.remove('hidden');
+                document.getElementById('auth-token').value = '';
+            }
+        }
+
+        function showAdmin() {
+            document.getElementById('auth-gate').style.display = 'none';
+            document.getElementById('admin-content').classList.add('authed');
+            fetch('bosses.json').then(r => r.json()).then(d => { bosses = d; render(); }).catch(e => console.log("No initial data"));
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_bearer');
+            location.reload();
+        }
+
+        // Auto-login if token exists in session
+        (async function checkSession() {
+            const saved = sessionStorage.getItem('admin_bearer');
+            if (saved) {
+                const hash = await hashToken(saved);
+                if (hash === ADMIN_TOKEN_HASH) { showAdmin(); return; }
+            }
+        })();
+    </script>
+</body>
+</html>
