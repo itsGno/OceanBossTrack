@@ -21,7 +21,7 @@
         .boss-card.pinned { border-color: #fbbf24; background-color: #1e1b11; }
         .alive-glow { animation: shadow-pulse 1.5s infinite; border-color: #f97316 !important; background-color: rgba(249, 115, 22, 0.08) !important; }
         @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0px rgba(249, 115, 22, 0.5); } 100% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); } }
-        .btn-locked { opacity: 0.15; cursor: not-allowed !important; pointer-events: none; filter: grayscale(1); }
+        .btn-locked { opacity: 0.4; cursor: not-allowed !important; pointer-events: none; filter: grayscale(0.5); }
         .bg-black-40 { background-color: rgba(0, 0, 0, 0.4); }
         .text-event-orange { color: #f97316 !important; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
         .filter-btn { border: 1px solid #334155; padding: 0.4rem 0.8rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold; transition: all 0.2s; background: #1e293b; color: #94a3b8; white-space: nowrap; position: relative; }
@@ -31,13 +31,13 @@
         .ch-btn { position: relative; border-radius: 8px; font-size: 9px; font-weight: bold; transition: all 0.2s; border: 1px solid #334155; color: #94a3b8; background: #1e293b; min-width: 38px; }
         .ch-btn.active { background-color: #f59e0b; color: #000; border-color: #f59e0b; }
         
-        .stage-btn { font-size: 11px; font-weight: bold; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 10px; padding: 6px 0; transition: all 0.2s; flex: 1; min-width: 0; text-align: center; }
+        .stage-btn { font-size: 12px; font-weight: bold; border: 2px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 10px; padding: 8px 0; transition: all 0.2s; flex: 1; min-width: 0; text-align: center; }
         .stage-btn.active-1 { background: #4b5563; color: white; border-color: #6b7280; }
         .stage-btn.active-2 { background: #3b82f6; color: white; border-color: #60a5fa; }
         .stage-btn.active-3 { background: #8b5cf6; color: white; border-color: #a78bfa; }
         .stage-btn.active-4 { background: #ec4899; color: white; border-color: #f472b6; }
         .stage-btn.active-5 { background: #f97316; color: white; border-color: #fb923c; animation: pulse 1s infinite; }
-        .spawned-btn { background: #065f46; color: #34d399; border: 1px solid #059669; }
+        .spawned-btn { background: #065f46; color: #34d399; border: 2px solid #059669; font-size: 12px; }
         .spawned-btn:hover { background: #059669; color: white; }
         .spawned-btn.is-spawned { background: #dc2626; color: white; border-color: #ef4444; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
