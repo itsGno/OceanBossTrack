@@ -19,10 +19,11 @@
                 <h1 class="text-3xl font-bold text-white">Boss Editor <span class="text-blue-500 text-sm">V1.7.1</span></h1>
                 <p class="text-gray-400 text-xs mt-1">จัดการข้อมูลบอสและแมพเพิ่มเติม (Update Race: Aberration)</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 flex-wrap">
                 <button onclick="exportJSON()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Export JSON</button>
                 <input type="file" id="importFile" class="hidden" onchange="importJSON(event)">
                 <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Import JSON</button>
+                <a href="sync.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition inline-block">🔄 Sync Images</a>
             </div>
         </header>
 
@@ -94,7 +95,14 @@
 
                         <div>
                             <label class="block text-xs text-gray-400 mb-1">URL รูปภาพ</label>
-                            <input type="text" id="b-img" class="w-full p-3 rounded-xl outline-none focus:border-blue-500" placeholder="https://...">
+                            <div class="flex gap-2">
+                                <input type="text" id="b-img" class="flex-1 p-3 rounded-xl outline-none focus:border-blue-500" placeholder="https://...">
+                                <button onclick="autoFindImage()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 rounded-xl text-xs font-bold transition whitespace-nowrap" title="Auto-find image from tosbase.com">🔍 Auto</button>
+                            </div>
+                            <div id="img-candidates" class="mt-2 flex flex-wrap gap-2 hidden"></div>
+                            <div id="img-preview" class="mt-2 hidden">
+                                <img id="img-preview-tag" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700">
+                            </div>
                         </div>
 
                         <div class="flex gap-2 pt-4">
@@ -209,6 +217,63 @@
             };
             reader.readAsText(event.target.files[0]);
         }
+
+        // Auto-find image from tosbase.com
+        const TOSBASE_IMG = "https://www.tosbase.com/content/img/icons/monsters/";
+
+        function checkImg(url) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        async function autoFindImage() {
+            const bossId = document.getElementById('b-id').value.trim();
+            const bossName = document.getElementById('b-name').value.trim();
+            if (!bossId && !bossName) return alert("กรุณากรอก Boss ID หรือชื่อบอสก่อน");
+
+            const container = document.getElementById('img-candidates');
+            container.classList.remove('hidden');
+            container.innerHTML = '<span class="text-xs text-gray-500">🔍 Searching tosbase.com...</span>';
+
+            const nameKey = (bossId || bossName.toLowerCase().replace(/\s+/g, '_')).replace(/^(cowardly|strong|indignant|angry)_/, '');
+            const slugs = [
+                `boss_${nameKey}`, `m_boss_${nameKey}`, `id_boss_${nameKey}`,
+                `mon_${nameKey}`, `boss_${nameKey}_m`, `boss_${nameKey}_blue`
+            ];
+
+            const found = [];
+            for (const slug of slugs) {
+                const url = `${TOSBASE_IMG}${slug}.png`;
+                if (await checkImg(url)) found.push({ slug, url });
+            }
+
+            if (found.length === 0) {
+                container.innerHTML = '<span class="text-xs text-red-400">ไม่พบรูปภาพ — ลองเปลี่ยน Boss ID</span>';
+            } else {
+                container.innerHTML = found.map(f =>
+                    `<div class="flex flex-col items-center gap-1 cursor-pointer" onclick="document.getElementById('b-img').value='${f.url}'; showPreview('${f.url}');">
+                        <img src="${f.url}" class="w-12 h-12 rounded-lg object-cover bg-black border-2 border-transparent hover:border-blue-500 transition">
+                        <span class="text-[9px] text-gray-500">${f.slug}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function showPreview(url) {
+            const preview = document.getElementById('img-preview');
+            const tag = document.getElementById('img-preview-tag');
+            preview.classList.remove('hidden');
+            tag.src = url;
+        }
+
+        // Show preview when image URL changes
+        document.getElementById('b-img').addEventListener('input', function() {
+            if (this.value.trim()) showPreview(this.value.trim());
+        });
 
         fetch('bosses.json').then(r => r.json()).then(d => { bosses = d; render(); }).catch(e => console.log("No initial data"));
     </script>

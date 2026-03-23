@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOS-M Boss Sync Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #0b101a; color: #e2e8f0; }
+        input, select { background-color: #1e293b !important; border: 1px solid #334155 !important; color: white !important; }
+        .sync-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 1rem; transition: all 0.3s; }
+        .sync-card.error { border-color: #ef4444; }
+        .sync-card.ok { border-color: #22c55e; }
+        .sync-card.updated { border-color: #f59e0b; }
+        .progress-bar { height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s; }
+        .log-entry { font-size: 11px; padding: 4px 8px; border-radius: 6px; margin-bottom: 2px; }
+        .log-ok { background: rgba(34, 197, 94, 0.1); color: #86efac; }
+        .log-err { background: rgba(239, 68, 68, 0.1); color: #fca5a5; }
+        .log-warn { background: rgba(245, 158, 11, 0.1); color: #fde68a; }
+        .log-info { background: rgba(59, 130, 246, 0.1); color: #93c5fd; }
+        .candidate-img { width: 48px; height: 48px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; object-fit: cover; background: #000; transition: all 0.2s; }
+        .candidate-img:hover { border-color: #3b82f6; transform: scale(1.1); }
+        .candidate-img.selected { border-color: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-gray-900 p-6 rounded-3xl border border-gray-800 shadow-2xl gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white">🔄 Boss Sync Tool</h1>
+                <p class="text-gray-400 text-xs mt-1">ซิงค์ข้อมูลบอสจาก tosbase.com - ตรวจสอบรูปภาพและค้นหาอัตโนมัติ</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <button onclick="startSync()" id="btn-sync" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition">🔍 Start Sync</button>
+                <button onclick="exportUpdated()" id="btn-export" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition hidden">💾 Export Updated JSON</button>
+                <a href="admin.html" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-xl text-sm font-bold transition inline-block">← Back to Editor</a>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 text-center">
+                <div class="text-2xl font-bold text-white" id="stat-total">0</div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase">Total Bosses</div>
+            </div>
+            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 text-center">
+                <div class="text-2xl font-bold text-green-400" id="stat-ok">0</div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase">Images OK</div>
+            </div>
+            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 text-center">
+                <div class="text-2xl font-bold text-red-400" id="stat-broken">0</div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase">Broken</div>
+            </div>
+            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 text-center">
+                <div class="text-2xl font-bold text-yellow-400" id="stat-found">0</div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase">Auto-Fixed</div>
+            </div>
+            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 text-center">
+                <div class="text-2xl font-bold text-purple-400" id="stat-tosbase">0</div>
+                <div class="text-[10px] text-gray-500 font-bold uppercase">From tosbase</div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="mb-6 hidden" id="progress-section">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-gray-400 font-bold" id="progress-text">Checking...</span>
+                <span class="text-xs text-gray-500" id="progress-pct">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 mb-6">
+            <div class="flex gap-2">
+                <input type="text" id="search-input" placeholder="🔍 ค้นหาชื่อบอสจาก tosbase.com (e.g. hydra, spector, clymen)..." class="flex-1 p-3 rounded-xl outline-none text-sm" onkeydown="if(event.key==='Enter') searchTosbase()">
+                <button onclick="searchTosbase()" class="bg-purple-600 hover:bg-purple-700 text-white px-5 rounded-xl text-sm font-bold transition">Search</button>
+            </div>
+            <div id="search-results" class="mt-3 hidden">
+                <div class="text-xs text-gray-500 mb-2 font-bold">ผลลัพธ์การค้นหา:</div>
+                <div id="search-grid" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 mb-6 max-h-48 overflow-y-auto hidden" id="log-section">
+            <div class="text-xs text-gray-500 font-bold mb-2 uppercase">Sync Log</div>
+            <div id="log-container"></div>
+        </div>
+
+        <!-- Boss List -->
+        <div id="boss-list" class="grid grid-cols-1 gap-3"></div>
+    </div>
+
+    <script>
+        const TOSBASE_IMG = "https://www.tosbase.com/content/img/icons/monsters/";
+        
+        // Known boss name -> tosbase slug mappings
+        const SLUG_MAP = {
+            "cowardly_red_bube_warrior": ["mon_goblin_warrior_red", "boss_goblin_warrior_red"],
+            "strong_spector_lord": ["boss_spector_m", "boss_spector"],
+            "strong_throneweaver": ["boss_throneweaver"],
+            "strong_nepenthes": ["boss_nepenthes"],
+            "cowardly_cyclops": ["boss_strongholder", "boss_cyclops"],
+            "strong_malletwyvern": ["boss_malletwyvern"],
+            "strong_necrovanter": ["boss_necrovanter"],
+            "strong_iltiswort": ["boss_iltiswort"],
+            "cowardly_mummygust": ["boss_mummyghast", "boss_mummygust"],
+            "strong_velniamonkey": ["boss_velniamonkey"],
+            "indignant_deathweaver": ["boss_deathweaver"],
+            "cowardly_clymen": ["boss_clymen"],
+            "strong_mothtem": ["boss_mothstem", "boss_mothtem"],
+            "strong_tutu": ["boss_tutu"],
+            "indignant_hydra": ["boss_hydra"],
+            "cowardly_reaverpede": ["boss_reaverpede"],
+            "strong_grinender": ["boss_grinender"],
+            "indignant_red_rambandgad": ["boss_bramble", "boss_rambandgad"],
+            "strong_taumas": ["boss_taumas"],
+            "cowardly_manticen": ["boss_manticen"],
+            "strong_chafer": ["boss_chafer"],
+            "strong_archon": ["boss_archon"],
+            "indignant_bramble": ["boss_bramble"],
+            "cowardly_vearkaras": ["boss_bearkaras", "boss_vearkaras"],
+            "strong_thumlord": ["boss_thumlord", "boss_tomblord"],
+            "strong_gorkas": ["boss_gorkas"],
+            "angry_rexipher": ["boss_lecifer", "boss_rexipher"],
+            "cowardly_scorpio": ["boss_confinedion", "boss_scorpio"],
+            "strong_corrupted": ["boss_fallen_statue", "boss_corrupted"],
+            "strong_blood": ["boss_blut", "boss_blood"],
+            "cowardly_nuaele": ["boss_nuaelle", "boss_nuaele"],
+            "strong_dionysus": ["boss_dionysus"],
+            "angry_demon_lord_hauberk": ["boss_hauberk"],
+            "strong_chapparition": ["boss_chapparition"],
+            "cowardly_devilglove": ["boss_devilglove"],
+            "strong_salamander": ["m_boss_salamander", "boss_salamander"],
+            "strong_mineloader": ["boss_mineloader"],
+            "indignant_helga_sircle": ["boss_helgasercle", "boss_helga_sircle"],
+            "cowardly_glackuman": ["boss_glackuman"],
+            "strong_fireload": ["boss_fireload"],
+            "strong_rtiteris": ["id_boss_riteris", "boss_riteris"],
+            "indignant_naktis": ["boss_naktis"],
+            "cowardly_gaigalas": ["boss_gaigalas"],
+            "strong_teraox": ["boss_teraox"],
+            "strong_ferretmarauder": ["boss_ferretmarauder"],
+            "strong_kirmeleech": ["boss_kimeleech", "boss_kirmeleech"],
+            "indignant_zaura": ["boss_zaura"],
+            "strong_stone_whale": ["boss_stone_whale"],
+            "strong_minotaurs": ["boss_minotaurs"],
+            "strong_sitrygailla": ["boss_sitrygailla", "boss_svitrigaila"],
+            "indignant_marnox": ["boss_marnox"],
+            "strong_colimencia": ["boss_colimencia"],
+            "strong_sequoia": ["boss_sequoia_blue", "boss_sequoia"],
+            "strong_neop": ["boss_neop"],
+            "indignant_nebulas": ["boss_chiefguard", "boss_nebulas"]
+        };
+
+        let bosses = [];
+        let syncResults = {};
+
+        function log(msg, type = "info") {
+            const container = document.getElementById('log-container');
+            const section = document.getElementById('log-section');
+            section.classList.remove('hidden');
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            div.textContent = msg;
+            container.prepend(div);
+            if (container.children.length > 100) container.lastChild.remove();
+        }
+
+        function updateStats() {
+            const total = bosses.length;
+            let ok = 0, broken = 0, found = 0, tosbase = 0;
+            for (const b of bosses) {
+                const r = syncResults[b.id];
+                if (!r) continue;
+                if (r.status === "ok") ok++;
+                else if (r.status === "broken") broken++;
+                else if (r.status === "fixed") { found++; ok++; }
+                if (b.img && b.img.includes("tosbase.com")) tosbase++;
+            }
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-ok').textContent = ok;
+            document.getElementById('stat-broken').textContent = broken;
+            document.getElementById('stat-found').textContent = found;
+            document.getElementById('stat-tosbase').textContent = tosbase;
+        }
+
+        function checkImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        }
+
+        async function findTosbaseImage(bossId) {
+            const slugs = SLUG_MAP[bossId];
+            if (!slugs) {
+                // Generate slug candidates from boss ID
+                const nameOnly = bossId.replace(/^(cowardly|strong|indignant|angry)_/, '');
+                const candidates = [
+                    `boss_${nameOnly}`,
+                    `m_boss_${nameOnly}`,
+                    `id_boss_${nameOnly}`,
+                    `mon_${nameOnly}`
+                ];
+                for (const slug of candidates) {
+                    const url = `${TOSBASE_IMG}${slug}.png`;
+                    if (await checkImage(url)) return url;
+                }
+                return null;
+            }
+            for (const slug of slugs) {
+                const url = `${TOSBASE_IMG}${slug}.png`;
+                if (await checkImage(url)) return url;
+            }
+            return null;
+        }
+
+        async function startSync() {
+            const btn = document.getElementById('btn-sync');
+            btn.disabled = true;
+            btn.textContent = "⏳ Syncing...";
+            btn.classList.add('opacity-50');
+
+            const progressSection = document.getElementById('progress-section');
+            progressSection.classList.remove('hidden');
+
+            syncResults = {};
+            let processed = 0;
+            const total = bosses.length;
+
+            for (const b of bosses) {
+                processed++;
+                const pct = Math.round((processed / total) * 100);
+                document.getElementById('progress-text').textContent = `Checking: ${b.name}...`;
+                document.getElementById('progress-pct').textContent = `${pct}%`;
+                document.getElementById('progress-fill').style.width = `${pct}%`;
+
+                // Check current image
+                const imgOk = await checkImage(b.img);
+
+                if (imgOk) {
+                    syncResults[b.id] = { status: "ok", originalImg: b.img };
+                    log(`✅ ${b.name} — image OK`, "ok");
+                } else {
+                    log(`❌ ${b.name} — image broken: ${b.img}`, "err");
+
+                    // Try to find from tosbase
+                    const found = await findTosbaseImage(b.id);
+                    if (found) {
+                        syncResults[b.id] = { status: "fixed", originalImg: b.img, newImg: found };
+                        b.img = found;
+                        log(`🔧 ${b.name} — auto-fixed with: ${found}`, "warn");
+                    } else {
+                        syncResults[b.id] = { status: "broken", originalImg: b.img, candidates: [] };
+                        log(`⚠️ ${b.name} — no replacement found`, "err");
+                    }
+                }
+                updateStats();
+            }
+
+            document.getElementById('progress-text').textContent = "Sync complete!";
+            btn.disabled = false;
+            btn.textContent = "🔍 Re-Sync";
+            btn.classList.remove('opacity-50');
+
+            if (Object.values(syncResults).some(r => r.status === "fixed")) {
+                document.getElementById('btn-export').classList.remove('hidden');
+            }
+
+            renderBossList();
+            log(`✨ Sync complete! ${total} bosses checked.`, "info");
+        }
+
+        function renderBossList() {
+            const list = document.getElementById('boss-list');
+            list.innerHTML = bosses.map((b, i) => {
+                const r = syncResults[b.id] || {};
+                const statusClass = r.status === "ok" ? "ok" : r.status === "fixed" ? "updated" : r.status === "broken" ? "error" : "";
+                const statusBadge = r.status === "ok" ? '<span class="text-[10px] bg-green-900/30 text-green-400 px-2 py-0.5 rounded border border-green-900/50">✅ OK</span>' :
+                    r.status === "fixed" ? '<span class="text-[10px] bg-yellow-900/30 text-yellow-400 px-2 py-0.5 rounded border border-yellow-900/50">🔧 Fixed</span>' :
+                    r.status === "broken" ? '<span class="text-[10px] bg-red-900/30 text-red-400 px-2 py-0.5 rounded border border-red-900/50">❌ Broken</span>' : '';
+
+                const isTosbase = b.img && b.img.includes("tosbase.com");
+                const srcBadge = isTosbase ? '<span class="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded border border-blue-900/50">tosbase</span>' :
+                    '<span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded border border-gray-700">external</span>';
+
+                return `<div class="sync-card ${statusClass} p-4 flex items-center gap-4">
+                    <img src="${b.img || 'https://via.placeholder.com/150'}" class="w-14 h-14 rounded-xl object-cover bg-black border border-gray-700" onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h4 class="font-bold text-sm truncate text-white">${b.name}</h4>
+                            <span class="bg-yellow-600 text-black text-[9px] px-1.5 py-0.5 rounded font-black">EP ${b.ep}</span>
+                            <span class="text-yellow-500 text-[9px] font-bold">LV.${b.lv}</span>
+                            ${statusBadge}
+                            ${srcBadge}
+                        </div>
+                        <div class="text-[10px] text-gray-500 mt-1 truncate">${b.img}</div>
+                        ${r.status === "fixed" ? `<div class="text-[10px] text-yellow-500 mt-0.5">was: ${r.originalImg}</div>` : ''}
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <button onclick="manualSearch(${i})" class="text-[10px] bg-purple-900/30 text-purple-400 px-3 py-1 rounded-lg hover:bg-purple-900/60 border border-purple-900/50 whitespace-nowrap">🔍 Find Image</button>
+                        <button onclick="promptUrl(${i})" class="text-[10px] bg-gray-800 text-gray-400 px-3 py-1 rounded-lg hover:bg-gray-700 border border-gray-700 whitespace-nowrap">✏️ Set URL</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function searchTosbase() {
+            const query = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!query) return;
+
+            const resultsSection = document.getElementById('search-results');
+            const grid = document.getElementById('search-grid');
+            resultsSection.classList.remove('hidden');
+            grid.innerHTML = '<span class="text-xs text-gray-500">Searching...</span>';
+
+            // Generate candidate slugs
+            const slugCandidates = [
+                `boss_${query}`,
+                `m_boss_${query}`,
+                `id_boss_${query}`,
+                `mon_${query}`,
+                `boss_${query}_m`,
+                `mon_${query}_red`,
+                `mon_${query}_blue`,
+                `boss_${query}_blue`,
+            ];
+
+            // Also try variants with underscores removed/added
+            const words = query.split(/[_\s]+/);
+            if (words.length > 1) {
+                slugCandidates.push(`boss_${words.join('')}`);
+                slugCandidates.push(`boss_${words.join('_')}`);
+            }
+
+            const found = [];
+            for (const slug of slugCandidates) {
+                const url = `${TOSBASE_IMG}${slug}.png`;
+                if (await checkImage(url)) {
+                    found.push({ slug, url });
+                }
+            }
+
+            if (found.length === 0) {
+                grid.innerHTML = '<span class="text-xs text-red-400">ไม่พบรูปภาพที่ตรงกัน — ลองชื่ออื่น</span>';
+                log(`🔍 Search "${query}" — no results`, "warn");
+            } else {
+                grid.innerHTML = found.map(f =>
+                    `<div class="flex flex-col items-center gap-1">
+                        <img src="${f.url}" class="candidate-img" onclick="copyUrl('${f.url}')" title="Click to copy URL">
+                        <span class="text-[9px] text-gray-500 max-w-[80px] truncate">${f.slug}</span>
+                    </div>`
+                ).join('');
+                log(`🔍 Search "${query}" — found ${found.length} images`, "ok");
+            }
+        }
+
+        async function manualSearch(index) {
+            const b = bosses[index];
+            // Extract base name without prefix
+            const nameOnly = b.id.replace(/^(cowardly|strong|indignant|angry)_/, '');
+            document.getElementById('search-input').value = nameOnly;
+
+            const resultsSection = document.getElementById('search-results');
+            const grid = document.getElementById('search-grid');
+            resultsSection.classList.remove('hidden');
+            grid.innerHTML = '<span class="text-xs text-gray-500">Searching for ' + b.name + '...</span>';
+
+            const slugCandidates = [
+                `boss_${nameOnly}`,
+                `m_boss_${nameOnly}`,
+                `id_boss_${nameOnly}`,
+                `mon_${nameOnly}`,
+                `boss_${nameOnly}_m`,
+                ...(SLUG_MAP[b.id] || [])
+            ];
+
+            // Deduplicate
+            const uniqueSlugs = [...new Set(slugCandidates)];
+            const found = [];
+
+            for (const slug of uniqueSlugs) {
+                const url = `${TOSBASE_IMG}${slug}.png`;
+                if (await checkImage(url)) {
+                    found.push({ slug, url });
+                }
+            }
+
+            if (found.length === 0) {
+                grid.innerHTML = '<span class="text-xs text-red-400">ไม่พบรูปภาพจาก tosbase — ลองค้นหาด้วยชื่ออื่น</span>';
+            } else {
+                grid.innerHTML = found.map(f =>
+                    `<div class="flex flex-col items-center gap-1">
+                        <img src="${f.url}" class="candidate-img" onclick="applyImage(${index}, '${f.url}')" title="Click to apply">
+                        <span class="text-[9px] text-gray-500 max-w-[80px] truncate">${f.slug}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function applyImage(index, url) {
+            const b = bosses[index];
+            const oldImg = b.img;
+            b.img = url;
+            syncResults[b.id] = { status: "fixed", originalImg: oldImg, newImg: url };
+            log(`✅ Applied new image for ${b.name}: ${url}`, "ok");
+            updateStats();
+            renderBossList();
+            document.getElementById('btn-export').classList.remove('hidden');
+        }
+
+        function promptUrl(index) {
+            const b = bosses[index];
+            const url = prompt(`Set image URL for ${b.name}:`, b.img);
+            if (url && url.trim()) {
+                applyImage(index, url.trim());
+            }
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                log(`📋 Copied: ${url}`, "info");
+            });
+        }
+
+        function exportUpdated() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bosses, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "bosses.json");
+            dl.click();
+            log("💾 Exported updated bosses.json", "info");
+        }
+
+        // Load bosses on startup
+        fetch('bosses.json?v=' + Date.now())
+            .then(r => r.json())
+            .then(d => {
+                bosses = d;
+                document.getElementById('stat-total').textContent = d.length;
+                document.getElementById('stat-tosbase').textContent = d.filter(b => b.img && b.img.includes('tosbase.com')).length;
+                renderBossList();
+                log(`📦 Loaded ${d.length} bosses from bosses.json`, "info");
+            })
+            .catch(e => {
+                log("❌ Failed to load bosses.json — make sure the file exists", "err");
+            });
+    </script>
+</body>
+</html>
