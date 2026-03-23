@@ -263,8 +263,17 @@
             const now = Date.now() + _srvOfst;
             const currentTimer = _fbD[`${id}_ch${ch}`];
 
-            if (!currentTimer || currentTimer.expireTime > now) {
-                alert(`❌ บอสยังไม่ถึงช่วงปลุกบอส!`);
+            // ถ้ายังไม่มี timer ให้สร้างใหม่โดยตั้ง expireTime = now (alive ทันที)
+            if (!currentTimer) {
+                const timeStr = new Date(now).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).set({
+                    expireTime: now, user: n, time: timeStr, notified: false, ch: ch,
+                    stage: stage, stage_by: n, last_update: now
+                });
+                if (stage === 5) {
+                    _db.ref(`groups/${_currG}/logs`).push({ bossName: b.name + " (SPAWNED)", ch: ch, user: n, time: timeStr, timestamp: now });
+                    _post(id, "BOSS_SPAWN", ch);
+                }
                 return;
             }
             
@@ -290,12 +299,7 @@
             const now = Date.now() + _srvOfst;
             const currentTimer = _fbD[`${id}_ch${ch}`];
 
-            if (!currentTimer || currentTimer.expireTime > now) {
-                alert(`❌ บอส CH ${ch} ยังไม่ถึงช่วงปลุกบอส!`);
-                return;
-            }
-
-            if (currentTimer.spawned) {
+            if (currentTimer && currentTimer.spawned) {
                 alert(`⚠️ บอสนี้ถูกมาร์คว่าเกิดแล้ว โดย ${currentTimer.spawned_by || 'Unknown'}`);
                 return;
             }
@@ -303,14 +307,25 @@
             if (!confirm(`🎯 ยืนยัน: บอส [${b.name}] CH ${ch} เกิดแล้ว?`)) return;
 
             const timeStr = new Date(now).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update({
+            const updateData = {
                 spawned: true,
                 spawned_by: n,
                 spawned_time: timeStr,
                 stage: 5,
                 stage_by: n,
                 last_update: now
-            });
+            };
+            // ถ้ายังไม่มี timer ให้สร้างใหม่
+            if (!currentTimer) {
+                updateData.expireTime = now;
+                updateData.user = n;
+                updateData.time = timeStr;
+                updateData.notified = false;
+                updateData.ch = ch;
+                _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).set(updateData);
+            } else {
+                _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).update(updateData);
+            }
             _db.ref(`groups/${_currG}/logs`).push({
                 bossName: b.name + " (เกิดแล้ว!)",
                 ch: ch, user: n, time: timeStr, timestamp: now
@@ -385,8 +400,7 @@
                 [1, 2, 3, 4, 5].forEach(num => {
                     const sBtn = document.getElementById(`btn-stg-${id}-${num}`);
                     if (sBtn) {
-                        sBtn.classList.toggle('btn-locked', !isAlive || !_isE);
-                        sBtn.className = `stage-btn ${(!isAlive || !_isE) ? "btn-locked" : ""} ${curStage === num ? 'active-' + num : ''}`;
+                        sBtn.className = `stage-btn ${!_isE ? "btn-locked" : ""} ${curStage === num ? 'active-' + num : ''}`;
                     }
                 });
 
@@ -396,8 +410,8 @@
                     let h=Math.floor(r/3600), m=Math.floor((r%3600)/60), s=r%60;
                     tmE.innerText = `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                     tmE.className = "text-xl text-yellow-400 font-mono";
-                    stE.innerText = `CH ${currentCh} - COUNTING...`; stE.className = "text-[9px] text-gray-500 font-black mt-0.5 uppercase";
-                    if (spawnedBtn) { spawnedBtn.classList.add('btn-locked'); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
+                    stE.innerText = curStage > 0 ? `CH ${currentCh} - P${curStage}` : `CH ${currentCh} - COUNTING...`; stE.className = "text-[9px] text-gray-500 font-black mt-0.5 uppercase";
+                    if (spawnedBtn) { spawnedBtn.classList.toggle('btn-locked', !_isE); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
                 } else {
                     tmE.innerText = `CH ${currentCh} ALIVE! ⚔️`; tmE.className = "text-lg text-event-orange font-bold animate-pulse";
                     if (t.spawned) {
@@ -418,10 +432,10 @@
                 lgE.innerText = `CH ${currentCh}: No Data`;
                 [1, 2, 3, 4, 5].forEach(num => {
                     const sBtn = document.getElementById(`btn-stg-${id}-${num}`);
-                    if (sBtn) sBtn.className = `stage-btn btn-locked`;
+                    if (sBtn) sBtn.className = `stage-btn ${!_isE ? 'btn-locked' : ''}`;
                 });
                 const spawnedBtn2 = document.getElementById(`btn-spawned-${id}`);
-                if (spawnedBtn2) { spawnedBtn2.classList.add('btn-locked'); spawnedBtn2.classList.remove('is-spawned'); spawnedBtn2.innerText = '🎯 เกิดแล้ว!'; }
+                if (spawnedBtn2) { spawnedBtn2.classList.toggle('btn-locked', !_isE); spawnedBtn2.classList.remove('is-spawned'); spawnedBtn2.innerText = '🎯 เกิดแล้ว!'; }
             }
         }
 
