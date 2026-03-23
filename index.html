@@ -31,7 +31,7 @@
         .ch-btn { position: relative; border-radius: 8px; font-size: 9px; font-weight: bold; transition: all 0.2s; border: 1px solid #334155; color: #94a3b8; background: #1e293b; min-width: 38px; }
         .ch-btn.active { background-color: #f59e0b; color: #000; border-color: #f59e0b; }
         
-        .stage-btn { font-size: 10px; font-weight: bold; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 8px; padding: 2px 8px; transition: all 0.2s; }
+        .stage-btn { font-size: 11px; font-weight: bold; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 10px; padding: 6px 0; transition: all 0.2s; flex: 1; min-width: 0; text-align: center; }
         .stage-btn.active-1 { background: #4b5563; color: white; border-color: #6b7280; }
         .stage-btn.active-2 { background: #3b82f6; color: white; border-color: #60a5fa; }
         .stage-btn.active-3 { background: #8b5cf6; color: white; border-color: #a78bfa; }
@@ -224,8 +224,8 @@
                     <div class="bg-black rounded-xl py-2 px-2 text-center border border-gray-800 shadow-inner">
                         <div id="tmr-${b.id}" class="text-xl text-yellow-400 font-mono">READY</div>
                         <div id="st-${b.id}" class="text-[9px] text-green-500 font-black mt-0.5 uppercase">Ready to Hunt</div>
-                        <div class="mt-1.5 flex justify-center gap-0.5 flex-wrap" id="stage-cont-${b.id}">
-                            ${[1, 2, 3, 4, 5].map(num => `<button id="btn-stg-${b.id}-${num}" onclick="_setStage('${b.id}', ${num})" class="stage-btn ${l}" style="font-size:9px;padding:1px 5px">${num === 5 ? '⚔️' : 'P' + num}</button>`).join('')}
+                        <div class="mt-2 flex justify-center gap-1" id="stage-cont-${b.id}">
+                            ${[1, 2, 3, 4, 5].map(num => `<button id="btn-stg-${b.id}-${num}" onclick="_setStage('${b.id}', ${num})" class="stage-btn ${l}">${num === 5 ? '⚔️ BOSS' : 'P' + num}</button>`).join('')}
                         </div>
                         <button id="btn-spawned-${b.id}" onclick="_markSpawned('${b.id}')" class="mt-1.5 spawned-btn text-[10px] font-bold py-1.5 px-4 rounded-lg transition ${l}">🎯 เกิดแล้ว!</button>
                     </div>
