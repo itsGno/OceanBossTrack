@@ -442,12 +442,18 @@
                     stE.innerText = curStage > 0 ? `CH ${currentCh} - P${curStage}` : `CH ${currentCh} - COUNTING...`; stE.className = "text-[9px] text-gray-500 font-black mt-0.5 uppercase";
                     if (spawnedBtn) { spawnedBtn.classList.toggle('btn-locked', !_isE); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
                 } else {
+                    // Auto-set to P1 when countdown finishes and no stage set yet
+                    if (curStage === 0 && !t._autoP1) {
+                        t._autoP1 = true;
+                        _db.ref(`groups/${_currG}/timers/${id}_ch${currentCh}`).update({ stage: 1, last_update: now });
+                    }
+                    const displayStage = curStage || 1;
                     tmE.innerText = `CH ${currentCh} ALIVE! ⚔️`; tmE.className = "text-lg text-event-orange font-bold animate-pulse";
                     if (t.spawned) {
                         stE.innerText = `เกิดแล้ว! โดย ${t.spawned_by || '???'} ⚔️`; stE.className = "text-[9px] text-red-400 font-black mt-0.5 uppercase";
                         if (spawnedBtn) { spawnedBtn.classList.remove('btn-locked'); spawnedBtn.classList.add('is-spawned'); spawnedBtn.innerText = `🔴 เกิดแล้ว! (${t.spawned_by})`; }
                     } else {
-                        stE.innerText = curStage === 5 ? "บอสเกิดแล้ว! ⚔️" : `ตีมอน! (P${curStage || '-'})`; stE.className = "text-[9px] text-event-orange font-black mt-0.5 uppercase";
+                        stE.innerText = displayStage === 5 ? "บอสเกิดแล้ว! ⚔️" : `ตีมอน! (P${displayStage})`; stE.className = "text-[9px] text-event-orange font-black mt-0.5 uppercase";
                         if (spawnedBtn) { spawnedBtn.classList.toggle('btn-locked', !_isE); spawnedBtn.classList.remove('is-spawned'); spawnedBtn.innerText = '🎯 เกิดแล้ว!'; }
                     }
                     if (!t.notified && _isE) { 
