@@ -54,6 +54,21 @@
         .medal-gold { border-color: #fbbf24; background: linear-gradient(135deg, #2d240b 0%, #0f172a 100%); box-shadow: 0 0 15px rgba(251, 191, 36, 0.1); }
         #backToTop { transition: all 0.3s ease; transform: translateY(20px); opacity: 0; pointer-events: none; }
         #backToTop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* Alive Panel */
+        #alive-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 100; max-height: 80vh; width: 52px; transition: width 0.3s ease; }
+        #alive-panel:hover, #alive-panel.expanded { width: 220px; }
+        #alive-panel .panel-inner { background: rgba(15, 23, 42, 0.95); border: 2px solid #f97316; border-right: none; border-radius: 16px 0 0 16px; backdrop-filter: blur(10px); overflow: hidden; height: 100%; }
+        #alive-panel .panel-header { background: #f97316; color: #000; font-size: 11px; font-weight: 900; padding: 8px 10px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #alive-panel .alive-list { overflow-y: auto; max-height: calc(80vh - 40px); padding: 4px; }
+        #alive-panel .alive-item { display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 10px; cursor: pointer; transition: background 0.2s; white-space: nowrap; overflow: hidden; }
+        #alive-panel .alive-item:hover { background: rgba(249, 115, 22, 0.2); }
+        #alive-panel .alive-item img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 2px solid #f97316; flex-shrink: 0; }
+        #alive-panel .alive-item .info { overflow: hidden; min-width: 0; }
+        #alive-panel .alive-item .boss-name { font-size: 10px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #alive-panel .alive-item .boss-detail { font-size: 9px; color: #f97316; font-weight: 700; }
+        #alive-panel .no-alive { text-align: center; padding: 16px 8px; color: #475569; font-size: 10px; font-weight: bold; }
+        #alive-panel .alive-count { background: #dc2626; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; position: absolute; top: -6px; left: -6px; border: 2px solid #0b101a; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -122,6 +137,17 @@
     <button id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center z-50 border border-blue-400 focus:outline-none">
         <span class="material-symbols-outlined">arrow_upward</span>
     </button>
+
+    <!-- Alive Boss Panel -->
+    <div id="alive-panel">
+        <div class="panel-inner relative">
+            <span id="alive-count-badge" class="alive-count hidden">0</span>
+            <div class="panel-header">⚠️ ALIVE</div>
+            <div class="alive-list" id="alive-list">
+                <div class="no-alive">ไม่มีบอส ALIVE</div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const APP_VERSION = "1.9.1"; 
@@ -442,13 +468,19 @@
         function _loop() {
             setInterval(() => {
                 const now = Date.now() + _srvOfst, epCounts = { all: 0 };
+                const aliveItems = [];
                 _bsData.forEach(b => {
                     _updT(b.id);
                     const card = document.getElementById(`card-${b.id}`), maxCh = (b.ep === 13 || b.ep === "13") ? 5 : 3;
                     let hasAnyAlive = false;
                     for(let cNum=1; cNum<=maxCh; cNum++) {
                         const timer = _fbD[`${b.id}_ch${cNum}`];
-                        if (timer && (timer.expireTime - now) <= 0) { hasAnyAlive = true; break; }
+                        if (timer && (timer.expireTime - now) <= 0) {
+                            hasAnyAlive = true;
+                            const stg = timer.stage || 0;
+                            const spawned = timer.spawned;
+                            aliveItems.push({ name: b.name, img: b.img, ep: b.ep, ch: cNum, stage: stg, spawned: spawned, spawned_by: timer.spawned_by, id: b.id });
+                        }
                     }
                     if(card) card.classList.toggle('alive-glow', hasAnyAlive);
                     if(hasAnyAlive) { epCounts.all++; if(b.ep) epCounts[b.ep] = (epCounts[b.ep] || 0) + 1; }
@@ -457,7 +489,30 @@
                     const epKey = bg.id.replace('badge-', ''), count = epCounts[epKey] || 0;
                     bg.innerText = count; bg.classList.toggle('hidden', count === 0);
                 });
+                _updateAlivePanel(aliveItems);
             }, 1000);
+        }
+
+        function _updateAlivePanel(items) {
+            const list = document.getElementById('alive-list');
+            const badge = document.getElementById('alive-count-badge');
+            if (items.length === 0) {
+                list.innerHTML = '<div class="no-alive">ไม่มีบอส ALIVE</div>';
+                badge.classList.add('hidden');
+                return;
+            }
+            badge.innerText = items.length;
+            badge.classList.remove('hidden');
+            list.innerHTML = items.map(it => {
+                const stLabel = it.spawned ? `🔴 เกิดแล้ว!` : (it.stage > 0 ? `P${it.stage}` : '⚔️ ALIVE');
+                return `<div class="alive-item" onclick="document.getElementById('card-${it.id}').scrollIntoView({behavior:'smooth',block:'center'})">
+                    <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="info">
+                        <div class="boss-name">${it.name}</div>
+                        <div class="boss-detail">CH${it.ch} • EP${it.ep} • ${stLabel}</div>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         // --- เพิ่มระบบตรวจสอบ Penalty และป้องกันการกดทับ ---
