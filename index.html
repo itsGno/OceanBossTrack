@@ -55,6 +55,9 @@
         #backToTop { transition: all 0.3s ease; transform: translateY(20px); opacity: 0; pointer-events: none; }
         #backToTop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
+        @keyframes highlight-flash { 0%, 100% { box-shadow: 0 0 0 0px rgba(249, 115, 22, 0); } 25% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.8); } 50% { box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3); } 75% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.8); } }
+        .boss-card.highlight-flash { animation: highlight-flash 1.5s ease-out; border-color: #f97316 !important; }
+
         /* Alive Panel */
         #alive-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 100; max-height: 80vh; width: 52px; transition: width 0.3s ease; }
         #alive-panel:hover, #alive-panel.expanded { width: 220px; }
@@ -505,7 +508,7 @@
             badge.classList.remove('hidden');
             list.innerHTML = items.map(it => {
                 const stLabel = it.spawned ? `🔴 เกิดแล้ว!` : (it.stage > 0 ? `P${it.stage}` : '⚔️ ALIVE');
-                return `<div class="alive-item" onclick="document.getElementById('card-${it.id}').scrollIntoView({behavior:'smooth',block:'center'})">
+                return `<div class="alive-item" onclick="_scrollToCard('${it.id}')">
                     <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
                     <div class="info">
                         <div class="boss-name">${it.name}</div>
@@ -629,6 +632,16 @@
                 c = `${prefix}🗑️ **[${u}]** ลบเวลาบอส: **[${b.name}]** ที่ **${mapLoc} (CH ${ch})**`;
             }
             try { await fetch(w, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: c }) }); } catch (e) { }
+        }
+
+        function _scrollToCard(id) {
+            const card = document.getElementById('card-' + id);
+            if (!card) return;
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.remove('highlight-flash');
+            void card.offsetWidth;
+            card.classList.add('highlight-flash');
+            setTimeout(() => card.classList.remove('highlight-flash'), 1600);
         }
 
         window.onscroll = function() { const btn = document.getElementById("backToTop"); if (document.documentElement.scrollTop > 300) btn.classList.add("show"); else btn.classList.remove("show"); };
