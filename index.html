@@ -55,8 +55,8 @@
         #backToTop { transition: all 0.3s ease; transform: translateY(20px); opacity: 0; pointer-events: none; }
         #backToTop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        @keyframes highlight-flash { 0%, 100% { box-shadow: 0 0 0 0px rgba(249, 115, 22, 0); } 25% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.8); } 50% { box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3); } 75% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.8); } }
-        .boss-card.highlight-flash { animation: highlight-flash 1.5s ease-out; border-color: #f97316 !important; }
+        @keyframes highlight-flash { 0%, 100% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0); } 25% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.9); } 50% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4); } 75% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.9); } }
+        .boss-card.highlight-flash { animation: highlight-flash 1.5s ease-out; border-color: #ffffff !important; }
 
         /* Alive Panel */
         #alive-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 100; max-height: 80vh; width: 52px; transition: width 0.3s ease; }
