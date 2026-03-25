@@ -72,6 +72,27 @@
         #alive-panel .alive-item .boss-detail { font-size: 11px; color: #f97316; font-weight: 700; }
         #alive-panel .no-alive { text-align: center; padding: 16px 8px; color: #475569; font-size: 12px; font-weight: bold; }
         #alive-panel .alive-count { background: #dc2626; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; position: absolute; top: -6px; left: -6px; border: 2px solid #0b101a; }
+
+        /* Group Chat */
+        #chat-panel { position: fixed; bottom: 20px; left: 20px; z-index: 100; width: 320px; max-height: 420px; display: flex; flex-direction: column; transition: all 0.3s ease; }
+        #chat-panel.minimized { max-height: 44px; overflow: hidden; }
+        #chat-panel .chat-inner { background: rgba(15, 23, 42, 0.97); border: 2px solid #3b82f6; border-radius: 16px; backdrop-filter: blur(10px); overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+        #chat-panel .chat-header { background: #3b82f6; color: #fff; font-size: 13px; font-weight: 900; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+        #chat-panel .chat-header .badge { background: #dc2626; color: white; font-size: 10px; font-weight: 900; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-left: 6px; display: none; }
+        #chat-panel .chat-messages { flex: 1; overflow-y: auto; padding: 8px; max-height: 280px; min-height: 120px; display: flex; flex-direction: column; gap: 4px; }
+        #chat-panel .chat-msg { font-size: 12px; line-height: 1.4; padding: 4px 8px; border-radius: 8px; word-break: break-word; }
+        #chat-panel .chat-msg .msg-user { font-weight: 700; color: #60a5fa; font-size: 11px; }
+        #chat-panel .chat-msg .msg-time { color: #475569; font-size: 9px; margin-left: 6px; }
+        #chat-panel .chat-msg .msg-text { color: #e2e8f0; }
+        #chat-panel .chat-msg.self { background: rgba(59, 130, 246, 0.15); }
+        #chat-panel .chat-msg.other { background: rgba(30, 41, 59, 0.6); }
+        #chat-panel .chat-input-area { display: flex; gap: 6px; padding: 8px; border-top: 1px solid #1e293b; }
+        #chat-panel .chat-input-area input { flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; color: #fff; font-size: 12px; outline: none; font-family: 'Kanit', sans-serif; }
+        #chat-panel .chat-input-area input::placeholder { color: #475569; }
+        #chat-panel .chat-input-area button { background: #3b82f6; color: white; border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Kanit', sans-serif; }
+        #chat-panel .chat-input-area button:hover { background: #2563eb; }
+        #chat-panel .chat-no-msg { text-align: center; padding: 24px 8px; color: #475569; font-size: 12px; font-weight: bold; }
+        @media (max-width: 640px) { #chat-panel { width: calc(100vw - 40px); left: 20px; bottom: 80px; } }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -148,6 +169,23 @@
             <div class="panel-header">⚠️ ALIVE</div>
             <div class="alive-list" id="alive-list">
                 <div class="no-alive">ไม่มีบอส ALIVE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Chat Panel -->
+    <div id="chat-panel" class="minimized">
+        <div class="chat-inner">
+            <div class="chat-header" onclick="_toggleChat()">
+                <span>💬 แชทรวม <span id="chat-badge" class="badge"></span></span>
+                <span id="chat-toggle-icon" style="font-size:16px;">▲</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-no-msg">ยังไม่มีข้อความ</div>
+            </div>
+            <div class="chat-input-area" id="chat-input-area">
+                <input type="text" id="chat-input" placeholder="พิมพ์ข้อความ..." maxlength="200" onkeydown="if(event.key==='Enter')_sendChat()">
+                <button onclick="_sendChat()">ส่ง</button>
             </div>
         </div>
     </div>
@@ -367,6 +405,7 @@
             _db.ref(`groups/${g}/logs`).on('value', s => { _fbLogs = s.val() || {}; _updLog(); _updMedals(); });
             document.getElementById('c-status').innerText = `● Connected: ${g.toUpperCase()}`;
             document.getElementById('c-status').className = "text-xs text-green-500 font-bold uppercase tracking-widest";
+            _initChat();
         }
 
         function _updMedals() {
@@ -648,6 +687,87 @@
             void card.offsetWidth;
             card.classList.add('highlight-flash');
             setTimeout(() => card.classList.remove('highlight-flash'), 1600);
+        }
+
+        // ===== Group Chat =====
+        let _chatOpen = false, _chatListener = null, _chatUnread = 0, _chatLastSeen = 0;
+
+        function _toggleChat() {
+            const panel = document.getElementById('chat-panel');
+            _chatOpen = !_chatOpen;
+            panel.classList.toggle('minimized', !_chatOpen);
+            document.getElementById('chat-toggle-icon').innerText = _chatOpen ? '▼' : '▲';
+            if (_chatOpen) {
+                _chatUnread = 0;
+                _updateChatBadge();
+                const msgs = document.getElementById('chat-messages');
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+        }
+
+        function _updateChatBadge() {
+            const badge = document.getElementById('chat-badge');
+            if (_chatUnread > 0 && !_chatOpen) {
+                badge.style.display = 'flex';
+                badge.innerText = _chatUnread > 99 ? '99+' : _chatUnread;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function _initChat() {
+            if (_chatListener) _chatListener();
+            if (!_currG) return;
+            const chatRef = _db.ref(`groups/${_currG}/chat`).orderByChild('ts').limitToLast(50);
+            _chatListener = chatRef.on('value', snap => {
+                const data = snap.val();
+                const container = document.getElementById('chat-messages');
+                const myName = localStorage.getItem('tos_uret_name') || '';
+                if (!data) { container.innerHTML = '<div class="chat-no-msg">ยังไม่มีข้อความ</div>'; return; }
+                const msgs = Object.values(data).sort((a, b) => a.ts - b.ts);
+                let newCount = 0;
+                msgs.forEach(m => { if (m.ts > _chatLastSeen && m.user !== myName) newCount++; });
+                if (!_chatOpen) _chatUnread += newCount;
+                if (msgs.length > 0) _chatLastSeen = msgs[msgs.length - 1].ts;
+                _updateChatBadge();
+
+                container.innerHTML = msgs.map(m => {
+                    const isSelf = m.user === myName;
+                    const t = new Date(m.ts).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    const safeText = (m.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const safeUser = (m.user || '???').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return `<div class="chat-msg ${isSelf ? 'self' : 'other'}"><span class="msg-user">${safeUser}</span><span class="msg-time">${t}</span><div class="msg-text">${safeText}</div></div>`;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            });
+
+            // Show/hide input based on login
+            document.getElementById('chat-input-area').style.display = _isE ? 'flex' : 'none';
+        }
+
+        function _sendChat() {
+            if (!_isE || !_currG) return;
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            const user = localStorage.getItem('tos_uret_name') || 'Unknown';
+            const now = Date.now() + _srvOfst;
+            _db.ref(`groups/${_currG}/chat`).push({ user: user, text: text, ts: now });
+            input.value = '';
+
+            // Cleanup: keep only last 100 messages
+            _db.ref(`groups/${_currG}/chat`).orderByChild('ts').once('value', snap => {
+                const all = snap.val();
+                if (!all) return;
+                const keys = Object.keys(all);
+                if (keys.length > 100) {
+                    const sorted = keys.map(k => ({ key: k, ts: all[k].ts })).sort((a, b) => a.ts - b.ts);
+                    const toRemove = sorted.slice(0, keys.length - 100);
+                    const updates = {};
+                    toRemove.forEach(item => { updates[item.key] = null; });
+                    _db.ref(`groups/${_currG}/chat`).update(updates);
+                }
+            });
         }
 
         window.onscroll = function() { const btn = document.getElementById("backToTop"); if (document.documentElement.scrollTop > 300) btn.classList.add("show"); else btn.classList.remove("show"); };
