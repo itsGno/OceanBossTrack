@@ -201,8 +201,7 @@
         let _selectedCh = {}, _hasAutoSwitched = {}; 
         let _webhooks = {};
         
-        // Penalty Variables
-        let _isInternalCoolingDown = false;
+
 
         _db.ref('config/webhooks').once('value', s => { _webhooks = s.val() || {}; });
         _db.ref(".info/serverTimeOffset").on("value", (s) => { _srvOfst = s.val() || 0; });
@@ -563,19 +562,9 @@
             }).join('');
         }
 
-        // --- เพิ่มระบบตรวจสอบ Penalty และป้องกันการกดทับ ---
         function _chk(id, m) {
-            if (!_isE || _isInternalCoolingDown) return;
+            if (!_isE) return;
             const now = Date.now() + _srvOfst;
-            
-            // ตรวจสอบ Penalty Tier จากเครื่อง
-            let pD = JSON.parse(localStorage.getItem('tos_penalty_reset') || '{"unlockTime": 0}');
-            if (now < pD.unlockTime) {
-                const diff = Math.ceil((pD.unlockTime - now) / 1000);
-                let timeText = diff > 60 ? Math.ceil(diff/60) + " นาที" : diff + " วินาที";
-                alert(`❌ [ระบบป้องกัน] คุณยังติดคูลดาวน์จากการลบบอส\nกรุณารออีก ${timeText}`);
-                return;
-            }
 
             const ch = _selectedCh[id] || 1;
             const existing = _fbD[`${id}_ch${ch}`];
@@ -603,38 +592,13 @@
 
         function _mchk(id) { const v = document.getElementById(`in-${id}`).value; if(v){ _chk(id, parseFloat(v)); document.getElementById(`in-${id}`).value=''; } }
         
-        // --- แก้ไขระบบ Reset ให้มี Penalty Tier ---
         function _rst(id) {
-            if (!_isE || _isInternalCoolingDown) return;
-            const ch = _selectedCh[id] || 1, now = Date.now() + _srvOfst;
-            
-            // ดึงค่า หรือสร้างใหม่ถ้าไม่มี
-            let pD = JSON.parse(localStorage.getItem('tos_penalty_reset') || '{"count": 0, "lastReset": 0, "unlockTime": 0}');
-            if (now < pD.unlockTime) {
-                const diff = Math.ceil((pD.unlockTime - now) / 1000);
-                alert(`❌ [ระบบป้องกัน] คุณกดลบบอสบ่อยเกินไป\nกรุณารออีก ${diff > 60 ? Math.ceil(diff/60) + " นาที" : diff + " วินาที"}`);
-                return;
-            }
+            if (!_isE) return;
+            const ch = _selectedCh[id] || 1;
 
             if(confirm(`Reset CH ${ch}?`)) {
-                // คำนวณครั้งที่ลบ (ถ้าห่างเกิน 1 ชม. เริ่มนับ 1 ใหม่)
-                if (now - (pD.lastReset || 0) > 3600000) pD.count = 1; else pD.count = (pD.count || 0) + 1;
-                
-                // แก้ไขเงื่อนไขเวลา: ครั้งที่ 1 = 30 วิ, ครั้งที่ 2 = 5 นาที, ครั้งที่ 3+ = 30 นาที
-                let cooldownMs = 30000; // default 30s
-                if (pD.count === 2) cooldownMs = 300000; // 5m
-                else if (pD.count >= 3) cooldownMs = 1800000; // 30m
-                pD.lastReset = now; 
-                pD.unlockTime = now + cooldownMs;
-                
-                localStorage.setItem('tos_penalty_reset', JSON.stringify(pD));
-                _isInternalCoolingDown = true;
-                
                 _db.ref(`groups/${_currG}/timers/${id}_ch${ch}`).remove().then(() => {
                     _post(id, "RESET", ch);
-                    const nextT = new Date(pD.unlockTime).toLocaleTimeString('th-TH');
-                    //alert(`⚠️ บันทึกการลบครั้งที่ ${pD.count}\nคุณจะถูกระงับการใช้งานจนถึงเวลา ${nextT}`);
-                    setTimeout(() => { _isInternalCoolingDown = false; }, 2000);
                 });
             }
         }
@@ -646,8 +610,7 @@
             if (n === "/testadmin") { 
                 g = "test_server"; 
                 n = "Admin_Tester"; 
-                // ล้างข้อมูล Penalty ทั้งหมดในเครื่องนี้
-                localStorage.removeItem('tos_penalty_reset');
+
             }
             if (g && n) { localStorage.setItem('tos_group_name', g); localStorage.setItem('tos_uret_name', n); localStorage.setItem('tos_locked', 'true'); location.reload(); }
         }
