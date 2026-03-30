@@ -59,8 +59,7 @@
         .boss-card.highlight-flash { animation: highlight-flash 1.5s ease-out; border-color: #ffffff !important; }
 
         /* Alive Panel */
-        #alive-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 100; max-height: 80vh; width: 52px; transition: width 0.3s ease; }
-        #alive-panel:hover, #alive-panel.expanded { width: 220px; }
+        #alive-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 100; max-height: 80vh; width: 220px; transition: width 0.3s ease; }
         #alive-panel .panel-inner { background: rgba(15, 23, 42, 0.95); border: 2px solid #f97316; border-right: none; border-radius: 16px 0 0 16px; backdrop-filter: blur(10px); overflow: hidden; height: 100%; }
         #alive-panel .panel-header { background: #f97316; color: #000; font-size: 13px; font-weight: 900; padding: 10px 12px; text-align: center; white-space: nowrap; overflow: hidden; }
         #alive-panel .alive-list { overflow-y: auto; max-height: calc(80vh - 40px); padding: 4px; }
@@ -163,7 +162,7 @@
     </button>
 
     <!-- Alive Boss Panel -->
-    <div id="alive-panel">
+    <div id="alive-panel" class="expanded">
         <div class="panel-inner relative">
             <span id="alive-count-badge" class="alive-count hidden">0</span>
             <div class="panel-header">⚠️ ALIVE</div>
@@ -526,7 +525,7 @@
                             hasAnyAlive = true;
                             const stg = timer.stage || 0;
                             const spawned = timer.spawned;
-                            aliveItems.push({ name: b.name, img: b.img, ep: b.ep, lv: b.lv, ch: cNum, stage: stg, spawned: spawned, spawned_by: timer.spawned_by, id: b.id });
+                            aliveItems.push({ name: b.name, img: b.img, ep: b.ep, lv: b.lv, ch: cNum, stage: stg, spawned: spawned, spawned_by: timer.spawned_by, id: b.id, expireTime: timer.expireTime });
                         }
                     }
                     if(card) card.classList.toggle('alive-glow', hasAnyAlive);
@@ -550,13 +549,23 @@
             }
             badge.innerText = items.length;
             badge.classList.remove('hidden');
+            // Sort: spawned first, then by stage descending (BOSS→P4→P3→P2→P1)
+            items.sort((a, b) => {
+                const aPri = a.spawned ? 100 : (a.stage || 0);
+                const bPri = b.spawned ? 100 : (b.stage || 0);
+                return bPri - aPri;
+            });
+            const now = Date.now() + _srvOfst;
             list.innerHTML = items.map(it => {
                 const stLabel = it.spawned ? `🔴 เกิดแล้ว!` : (it.stage > 0 ? `P${it.stage}` : '⚔️ ALIVE');
+                const elapsed = Math.max(0, Math.floor((now - it.expireTime) / 1000));
+                const eH = Math.floor(elapsed / 3600), eM = Math.floor((elapsed % 3600) / 60), eS = elapsed % 60;
+                const elapsedStr = eH > 0 ? `${eH}:${eM.toString().padStart(2,'0')}:${eS.toString().padStart(2,'0')}` : `${eM}:${eS.toString().padStart(2,'0')}`;
                 return `<div class="alive-item" onclick="_scrollToCard('${it.id}')">
                     <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
                     <div class="info">
                         <div class="boss-name">${it.name}</div>
-                        <div class=\"boss-detail\">LV.${it.lv} • CH${it.ch} • EP${it.ep} • ${stLabel}</div>
+                        <div class="boss-detail">CH${it.ch} • ${stLabel} • ⏱${elapsedStr}</div>
                     </div>
                 </div>`;
             }).join('');
