@@ -65,8 +65,10 @@
         #alive-panel .alive-list { overflow-y: auto; max-height: calc(80vh - 40px); padding: 4px; }
         #alive-panel .alive-item { display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 10px; cursor: pointer; transition: background 0.2s; white-space: nowrap; overflow: hidden; }
         #alive-panel .alive-item:hover { background: rgba(249, 115, 22, 0.2); }
-        #alive-panel .alive-item.high-stage { animation: alive-highlight-flash 1.2s infinite; border: 1.5px solid rgba(255,255,255,0.7); }
-        @keyframes alive-highlight-flash { 0%, 100% { box-shadow: 0 0 0 0px rgba(255,255,255,0); background: rgba(255,255,255,0.03); } 50% { box-shadow: 0 0 8px 2px rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); } }
+        #alive-panel .alive-item.stage-yellow { animation: alive-flash-yellow 1.2s infinite; border: 1.5px solid rgba(251,191,36,0.7); }
+        @keyframes alive-flash-yellow { 0%, 100% { box-shadow: 0 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0.03); } 50% { box-shadow: 0 0 8px 2px rgba(251,191,36,0.5); background: rgba(251,191,36,0.12); } }
+        #alive-panel .alive-item.stage-red { animation: alive-flash-red 1.2s infinite; border: 1.5px solid rgba(239,68,68,0.7); }
+        @keyframes alive-flash-red { 0%, 100% { box-shadow: 0 0 0 0px rgba(239,68,68,0); background: rgba(239,68,68,0.03); } 50% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.5); background: rgba(239,68,68,0.12); } }
         #alive-panel .alive-item img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 2px solid #f97316; flex-shrink: 0; }
         #alive-panel .alive-item .info { overflow: hidden; min-width: 0; }
         #alive-panel .alive-item .boss-name { font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -573,7 +575,7 @@
                 const elapsed = Math.max(0, Math.floor((now - it.expireTime) / 1000));
                 const eH = Math.floor(elapsed / 3600), eM = Math.floor((elapsed % 3600) / 60), eS = elapsed % 60;
                 const elapsedStr = eH > 0 ? `${eH}:${eM.toString().padStart(2,'0')}:${eS.toString().padStart(2,'0')}` : `${eM}:${eS.toString().padStart(2,'0')}`;
-                const highStage = (it.stage >= 4 || it.spawned) ? 'high-stage' : '';
+                const highStage = (it.stage >= 4 || it.spawned) ? 'stage-red' : (it.stage === 3 ? 'stage-yellow' : '');
                 return `<div class="alive-item ${highStage}" onclick="_scrollToCard('${it.id}')">
                     <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
                     <div class="info">
@@ -665,8 +667,12 @@
         }
 
         function _scrollToCard(id) {
-            const card = document.getElementById('card-' + id);
-            if (!card) return;
+            let card = document.getElementById('card-' + id);
+            if (!card) {
+                _filterEP('all');
+                card = document.getElementById('card-' + id);
+                if (!card) return;
+            }
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             card.classList.remove('highlight-flash');
             void card.offsetWidth;
