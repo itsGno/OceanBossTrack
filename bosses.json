@@ -338,7 +338,7 @@
   {
     "id": "strong_corrupted",
     "name": "Strong Corrupted",
-    "lv": 71,
+    "lv": 70,
     "ep": 8,
     "respawn": 120,
     "map": "Aqueduct Bridge Area",
@@ -350,7 +350,7 @@
   {
     "id": "strong_blood",
     "name": "Strong Blood",
-    "lv": 72,
+    "lv": 71,
     "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 1",
@@ -362,7 +362,7 @@
   {
     "id": "cowardly_nuaele",
     "name": "Cowardly Nuaele",
-    "lv": 73,
+    "lv": 72,
     "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 3",
@@ -374,7 +374,7 @@
   {
     "id": "strong_dionysus",
     "name": "Strong Dionysus",
-    "lv": 74,
+    "lv": 73,
     "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 4",
@@ -386,7 +386,7 @@
   {
     "id": "angry_demon_lord_hauberk",
     "name": "Angry Demon Lord Hauberk",
-    "lv": 75,
+    "lv": 74,
     "ep": 8,
     "respawn": 120,
     "map": "Demon Prison District 5",
