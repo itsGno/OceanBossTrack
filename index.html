@@ -537,7 +537,7 @@
                             hasAnyAlive = true;
                             const stg = timer.stage || 0;
                             const spawned = timer.spawned;
-                            aliveItems.push({ name: b.name, img: b.img, ep: b.ep, lv: b.lv, ch: cNum, stage: stg, spawned: spawned, spawned_by: timer.spawned_by, id: b.id, expireTime: timer.expireTime });
+                            aliveItems.push({ name: b.name, img: b.img, ep: b.ep, lv: b.lv, map_ext: b.map_ext, ch: cNum, stage: stg, spawned: spawned, spawned_by: timer.spawned_by, id: b.id, expireTime: timer.expireTime });
                         }
                     }
                     if(card) card.classList.toggle('alive-glow', hasAnyAlive);
@@ -578,7 +578,7 @@
                     <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
                     <div class="info">
                         <div class="boss-name">${it.name}</div>
-                        <div class="boss-detail">Lv.${it.lv} EP${it.ep} • CH${it.ch} • ${stLabel} • ⏱${elapsedStr}</div>
+                        <div class="boss-detail">${it.map_ext} • CH${it.ch} • ${stLabel} • ⏱${elapsedStr}</div>
                     </div>
                 </div>`;
             }).join('');

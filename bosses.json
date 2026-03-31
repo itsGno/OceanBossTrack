@@ -218,7 +218,7 @@
   {
     "id": "strong_taumas",
     "name": "Strong Taumas",
-    "lv": 53,
+    "lv": 52,
     "ep": 6,
     "respawn": 120,
     "map": "Uskis Arable Land",
@@ -290,7 +290,7 @@
   {
     "id": "strong_thumlord",
     "name": "Strong Thumlord",
-    "lv": 65,
+    "lv": 64,
     "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 1F",
@@ -302,7 +302,7 @@
   {
     "id": "strong_gorkas",
     "name": "Strong Gorkas",
-    "lv": 67,
+    "lv": 66,
     "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 2F",
@@ -314,7 +314,7 @@
   {
     "id": "angry_rexipher",
     "name": "Angry Rexipher",
-    "lv": 69,
+    "lv": 68,
     "ep": 7,
     "respawn": 120,
     "map": "Royal Mausoleum 3F",
