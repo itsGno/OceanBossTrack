@@ -6,6 +6,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="googlebot" content="noindex, nofollow">
     <title>TOS-M Boss Editor - Updated Race Type</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
@@ -41,6 +43,8 @@
                 <p class="text-gray-400 text-xs mt-1">จัดการข้อมูลบอสและแมพเพิ่มเติม (Update Race: Aberration)</p>
             </div>
             <div class="flex gap-2 flex-wrap">
+                <button onclick="saveToFirebase()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">🔥 Save to Firebase</button>
+                <button onclick="loadFromFirebase()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">📥 Load Firebase</button>
                 <button onclick="exportJSON()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Export JSON</button>
                 <input type="file" id="importFile" class="hidden" onchange="importJSON(event)">
                 <button onclick="document.getElementById('importFile').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition">Import JSON</button>
@@ -144,15 +148,41 @@
         </div>
     </div>
 
+    <!-- Status Toast -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div id="toast-inner" class="px-6 py-3 rounded-2xl text-sm font-bold shadow-2xl border"></div>
+    </div>
+
     <script>
+        // --- Firebase Setup ---
+        const firebaseConfig = { databaseURL: "https://ocean-boss-track-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         let bosses = [];
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const inner = document.getElementById('toast-inner');
+            inner.textContent = msg;
+            inner.className = 'px-6 py-3 rounded-2xl text-sm font-bold shadow-2xl border ';
+            if (type === 'ok') inner.className += 'bg-green-900 text-green-300 border-green-700';
+            else if (type === 'err') inner.className += 'bg-red-900 text-red-300 border-red-700';
+            else inner.className += 'bg-blue-900 text-blue-300 border-blue-700';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function saveDraft() {
+            localStorage.setItem('admin_bosses_draft', JSON.stringify(bosses));
+        }
 
         function render() {
             const list = document.getElementById('boss-list');
             document.getElementById('count').innerText = bosses.length;
             list.innerHTML = bosses.map((b, i) => `
                 <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 flex items-center gap-4 hover:border-blue-500 transition group shadow-md">
-                    <img src="${b.img || 'https://via.placeholder.com/150'}" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700 group-hover:border-blue-500 transition">
+                    <img src="${b.img || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22><rect width=%22150%22 height=%22150%22 fill=%22%23334155%22/><text x=%2275%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2214%22>No Image</text></svg>'}" class="w-16 h-16 rounded-xl object-cover bg-black border border-gray-700 group-hover:border-blue-500 transition">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <h4 class="font-bold text-lg truncate text-white">${b.name}</h4>
@@ -192,7 +222,7 @@
             };
             if(!data.id || !data.name) return alert("กรุณาใส่ชื่อบอส");
             if(index == -1) bosses.push(data); else bosses[index] = data;
-            resetForm(); render();
+            saveDraft(); resetForm(); render();
         }
 
         function editBoss(i) {
@@ -212,7 +242,7 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        function deleteBoss(i) { if(confirm('ยืนยันการลบ?')) { bosses.splice(i, 1); render(); } }
+        function deleteBoss(i) { if(confirm('ยืนยันการลบ?')) { bosses.splice(i, 1); saveDraft(); render(); } }
 
         function resetForm() {
             document.getElementById('edit-index').value = "-1";
@@ -235,7 +265,7 @@
         function importJSON(event) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                try { bosses = JSON.parse(e.target.result); render(); } catch (err) { alert("ไฟล์ไม่ถูกต้อง"); }
+                try { bosses = JSON.parse(e.target.result); saveDraft(); render(); showToast('✅ Imported ' + bosses.length + ' bosses', 'ok'); } catch (err) { alert("ไฟล์ไม่ถูกต้อง"); }
             };
             reader.readAsText(event.target.files[0]);
         }
@@ -297,8 +327,40 @@
             if (this.value.trim()) showPreview(this.value.trim());
         });
 
+        // --- Firebase Save/Load ---
+        async function saveToFirebase() {
+            if (!bosses.length) return alert('ไม่มีข้อมูลบอสให้บันทึก');
+            if (!confirm('📤 บันทึกข้อมูลบอส ' + bosses.length + ' ตัวไปยัง Firebase?')) return;
+            try {
+                await db.ref('config/bosses').set(bosses);
+                showToast('🔥 Saved ' + bosses.length + ' bosses to Firebase!', 'ok');
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Save failed: ' + err.message, 'err');
+            }
+        }
+
+        async function loadFromFirebase() {
+            try {
+                showToast('📥 Loading from Firebase...', 'info');
+                const snap = await db.ref('config/bosses').once('value');
+                const data = snap.val();
+                if (data && Array.isArray(data) && data.length > 0) {
+                    bosses = data;
+                    saveDraft();
+                    render();
+                    showToast('✅ Loaded ' + bosses.length + ' bosses from Firebase', 'ok');
+                } else {
+                    showToast('⚠️ No boss data in Firebase', 'err');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('❌ Load failed: ' + err.message, 'err');
+            }
+        }
+
         // --- Auth Bearer Token System ---
-        const ADMIN_TOKEN_HASH = '463de958b5428bb843f05f66bbc07b40a5aa9b37f95c24cdc8dd198fb8fb0408';
+        const ADMIN_TOKEN_HASH = '1242d1a85910e183999e9f261cdd8d019574b237eac79ddd2037b4ae0d1484ee';
 
         async function hashToken(token) {
             const data = new TextEncoder().encode(token);
@@ -319,10 +381,48 @@
             }
         }
 
-        function showAdmin() {
+        async function showAdmin() {
             document.getElementById('auth-gate').style.display = 'none';
             document.getElementById('admin-content').classList.add('authed');
-            fetch('bosses.json').then(r => r.json()).then(d => { bosses = d; render(); }).catch(e => console.log("No initial data"));
+
+            // 1) Try localStorage draft first
+            const draft = localStorage.getItem('admin_bosses_draft');
+            if (draft) {
+                try {
+                    const parsed = JSON.parse(draft);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        bosses = parsed;
+                        render();
+                        showToast('📝 Loaded draft (' + bosses.length + ' bosses)', 'info');
+                        return;
+                    }
+                } catch(e) {}
+            }
+
+            // 2) Try Firebase
+            try {
+                const snap = await db.ref('config/bosses').once('value');
+                const fbData = snap.val();
+                if (fbData && Array.isArray(fbData) && fbData.length > 0) {
+                    bosses = fbData;
+                    saveDraft();
+                    render();
+                    showToast('🔥 Loaded ' + bosses.length + ' bosses from Firebase', 'ok');
+                    return;
+                }
+            } catch(e) { console.warn('Firebase load failed:', e); }
+
+            // 3) Fallback to bosses.json
+            try {
+                const r = await fetch('bosses.json');
+                bosses = await r.json();
+                saveDraft();
+                render();
+                showToast('📄 Loaded ' + bosses.length + ' bosses from bosses.json', 'info');
+            } catch(e) {
+                console.warn('No initial data:', e);
+                showToast('⚠️ No data loaded — use Import or Load Firebase', 'err');
+            }
         }
 
         function logout() {

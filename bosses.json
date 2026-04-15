@@ -658,5 +658,113 @@
     "element": "Dark",
     "race": "Demon",
     "img": "https://www.tosbase.com/content/img/icons/monsters/boss_chiefguard.png"
+  },
+  {
+    "id": "strong_dionia",
+    "name": "Strong Dionia",
+    "lv": 105,
+    "ep": 14,
+    "respawn": 120,
+    "map": "Nheto Forest",
+    "map_ext": "EP14-105",
+    "element": "Dark",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_dionia.png"
+  },
+  {
+    "id": "strong_ellaganos",
+    "name": "Strong Ellaganos",
+    "lv": 107,
+    "ep": 14,
+    "respawn": 120,
+    "map": "Svalphinghas Forest",
+    "map_ext": "EP14-107",
+    "element": "Light",
+    "race": "Aberration",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/f_boss_ellaganos.png"
+  },
+  {
+    "id": "strong_ebonyphone",
+    "name": "Strong Ebonyphone",
+    "lv": 109,
+    "ep": 14,
+    "respawn": 120,
+    "map": "Lhadar Forest",
+    "map_ext": "EP14-109",
+    "element": "Earth",
+    "race": "Beast",
+    "img": ""
+  },
+  {
+    "id": "strong_gazing_golem",
+    "name": "Strong Gazing Golem",
+    "lv": 111,
+    "ep": 14,
+    "respawn": 120,
+    "map": "Tevhrin Stalactite Cave 1",
+    "map_ext": "EP14-111",
+    "element": "Ice",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_gazing_golem.png"
+  },
+  {
+    "id": "indignant_zesty_of_destruction",
+    "name": "Indignant Zesty of Destruction",
+    "lv": 113,
+    "ep": 14,
+    "respawn": 120,
+    "map": "Tevhrin Stalactite Cave 2",
+    "map_ext": "EP14-113",
+    "element": "Lightning",
+    "race": "Demon",
+    "img": ""
+  },
+  {
+    "id": "strong_ironbaum",
+    "name": "Strong Ironbaum",
+    "lv": 115,
+    "ep": 15,
+    "respawn": 120,
+    "map": "Jeromel Square",
+    "map_ext": "EP15-115",
+    "element": "Fire",
+    "race": "Plant",
+    "img": "https://www.tosbase.com/content/img/icons/monsters/boss_ironbaum.png"
+  },
+  {
+    "id": "strong_diena",
+    "name": "Strong Diena",
+    "lv": 118,
+    "ep": 15,
+    "respawn": 120,
+    "map": "Jonael Memorial Dist.",
+    "map_ext": "EP15-118",
+    "element": "Dark",
+    "race": "Insects",
+    "img": ""
+  },
+  {
+    "id": "strong_ginklass",
+    "name": "Strong Ginklass",
+    "lv": 120,
+    "ep": 15,
+    "respawn": 120,
+    "map": "Taniel I Memorial Dist.",
+    "map_ext": "EP15-120",
+    "element": "Ice",
+    "race": "Aberration",
+    "img": ""
+  },
+  {
+    "id": "indignant_algis",
+    "name": "Indignant Algis",
+    "lv": 123,
+    "ep": 15,
+    "respawn": 120,
+    "map": "Timerys Temple",
+    "map_ext": "EP15-123",
+    "element": "Light",
+    "race": "Demon",
+    "img": ""
   }
 ]

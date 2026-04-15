@@ -224,12 +224,13 @@
 
         async function _init() {
             const filterCont = document.getElementById('ep-filters');
-            for(let i=1; i<=13; i++) {
+            for(let i=1; i<=15; i++) {
                 if(!document.getElementById(`f-${i}`)) {
                     filterCont.innerHTML += `<button onclick="_filterEP('${i}')" class="filter-btn" id="f-${i}">EP ${i} <span id="badge-${i}" class="ep-badge hidden">0</span></button>`;
                 }
             }
             try {
+                // Always load from bosses.json (the maintained source of truth)
                 const r = await fetch('bosses.json?v=' + Date.now());
                 _bsData = await r.json();
                 const sG = localStorage.getItem('tos_group_name'), sN = localStorage.getItem('tos_uret_name'), isL = localStorage.getItem('tos_locked') === 'true';
@@ -271,7 +272,7 @@
 
                 return `<div class="boss-card p-4 flex flex-col gap-3 ${p?'pinned':''}" id="card-${b.id}">
                     <div class="relative w-full h-28 flex-shrink-0">
-                        <img src="${b.img}" class="w-full h-full object-cover rounded-xl border border-gray-800" onerror="this.src='https://via.placeholder.com/150'">
+                        <img src="${b.img || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22><rect width=%22150%22 height=%22150%22 fill=%22%23334155%22/><text x=%2275%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2214%22>No Image</text></svg>'}" class="w-full h-full object-cover rounded-xl border border-gray-800" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22><rect width=%22150%22 height=%22150%22 fill=%22%23334155%22/><text x=%2275%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2214%22>No Image</text></svg>'">
                         <div class="absolute -bottom-2 right-1 bg-yellow-600 text-black text-[9px] font-black px-1.5 py-0.5 rounded-lg z-10">EP ${b.ep}</div>
                         <button onclick="_pin('card-${b.id}')" class="absolute -top-2 -left-2 bg-gray-800 rounded-full p-0.5 border border-gray-700 z-10">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ${p?'text-yellow-400 fill-current':'text-gray-600'}" viewBox="0 0 24 24" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -577,7 +578,7 @@
                 const elapsedStr = eH > 0 ? `${eH}:${eM.toString().padStart(2,'0')}:${eS.toString().padStart(2,'0')}` : `${eM}:${eS.toString().padStart(2,'0')}`;
                 const highStage = (it.stage >= 4 || it.spawned) ? 'stage-red' : (it.stage === 3 ? 'stage-yellow' : '');
                 return `<div class="alive-item ${highStage}" onclick="_scrollToCard('${it.id}')">
-                    <img src="${it.img}" onerror="this.src='https://via.placeholder.com/150'">
+                    <img src="${it.img || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22><rect width=%2232%22 height=%2232%22 fill=%22%23334155%22/></svg>'}" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22><rect width=%2232%22 height=%2232%22 fill=%22%23334155%22/></svg>'">
                     <div class="info">
                         <div class="boss-name">${it.name}</div>
                         <div class="boss-detail">${it.map_ext} • CH${it.ch} • ${stLabel} • ⏱${elapsedStr}</div>
